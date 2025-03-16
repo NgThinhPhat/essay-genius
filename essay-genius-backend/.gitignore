@@ -65,4 +65,4 @@ replay_pid*
 .vscode
 *.iml
 
-env.properties
+identity-service/env.properties
