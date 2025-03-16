@@ -1,0 +1,128 @@
+services:
+  # POSTGRES
+  identity-service-postgres:
+    image: postgres:${SOFTWARE_VERSION_TAG}
+    container_name: identity-service-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: eternity_user
+      POSTGRES_PASSWORD: a_will_eternal
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - essay-genius-identity-service-postgres-data:/var/lib/postgresql/data
+      - ./identity-service/identity-service-postgres-init-db:/docker-entrypoint-initdb.d
+    ports:
+      - '5432:5432'
+    networks:
+      - essay-genius-network
+
+  # PGADMIN
+  identity-service-pgadmin:
+    image: elestio/pgadmin:latest
+    depends_on: [ identity-service-postgres ]
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${ADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${ADMIN_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - essay-genius-identity-service-pgadmin-data:/var/lib/pgadmin
+    networks:
+      - essay-genius-network
+
+  #  REDIS
+  identity-service-redis:
+    image: redis:latest
+    container_name: identity-service-redis
+    volumes:
+      - essay-genius-identity-service-redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - essay-genius-network
+    restart: unless-stopped
+
+  # KAFKA BROKER
+  essay-genius-kafka-broker:
+    image: bitnami/kafka:3.5.2-debian-12-r24
+    container_name: essay-genius-kafka-broker
+    hostname: essay-genius-kafka-broker
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_BROKER_ID: 1
+      KAFKA_KRAFT_MODE: "true"
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,SSL_LOCAL://0.0.0.0:9093,SSL_DOCKER://0.0.0.0:9094,CONTROLLER://0.0.0.0:9095"
+      KAFKA_ADVERTISED_LISTENERS: "SSL_LOCAL://localhost:9093,SSL_DOCKER://essay-genius-kafka-broker:9094,PLAINTEXT://essay-genius-kafka-broker:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,SSL_LOCAL:SSL,SSL_DOCKER:SSL,CONTROLLER:PLAINTEXT"
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      #      KAFKA_CFG_SECURITY_INTER_BROKER_PROTOCOL: "SSL_DOCKER"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@essay-genius-kafka-broker:9095"
+      KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL: "PLAIN"
+      KAFKA_SSL_CLIENT_AUTH: "required"
+      KAFKA_SSL_KEYSTORE_LOCATION: "/bitnami/kafka/config/certs/kafka.keystore.jks"
+      KAFKA_CFG_SSL_KEYSTORE_PASSWORD: "kafkapass"
+      KAFKA_CFG_SSL_KEY_PASSWORD: "kafkapass"
+      KAFKA_SSL_TRUSTSTORE_LOCATION: "/bitnami/kafka/config/certs/kafka.truststore.jks"
+      KAFKA_CFG_SSL_TRUSTSTORE_PASSWORD: "kafkapass"
+    #      KAFKA_CFG_SASL_ENABLED_MECHANISMS: "PLAIN"
+    #      KAFKA_CFG_OPTS: "-Djava.security.auth.login.config=/opt/bitnami/kafka/config/kafka_jaas.conf"
+    #      KAFKA_CFG_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="ben1201" password="Ben1201#" user_ben1201="Ben1201#";
+    volumes:
+      - ./docker/kafka/certs:/bitnami/kafka/config/certs
+      - essay-genius-kafka-broker-data:/var/lib/kafka/data
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+      - "9094:9094"
+    networks:
+      - essay-genius-network
+    restart: unless-stopped
+
+  #  MONGODB
+  essay-service-mongodb:
+    image: mongo:latest
+    container_name: essay-service-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: eternity_user
+      MONGO_INITDB_ROOT_PASSWORD: a_will_eternal
+    volumes:
+      - essay-service-mongodb-data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - essay-genius-network
+    restart: unless-stopped
+
+  # MONGODB EXPRESS
+  essay-service-mongo-express:
+    image: mongo-express:1.0.2-20-alpine3.19
+    container_name: essay-service-mongo-express
+    depends_on:
+      [ essay-service-mongodb ]
+    environment:
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: true
+      ME_CONFIG_MONGODB_ADMINUSERNAME: eternity_user
+      ME_CONFIG_MONGODB_ADMINPASSWORD: a_will_eternal
+      ME_CONFIG_MONGODB_SERVER: essay-service-mongodb
+      ME_CONFIG_BASICAUTH_USERNAME: root
+      ME_CONFIG_BASICAUTH_PASSWORD: root
+    ports:
+      - "5051:8081"
+    networks:
+      - essay-genius-network
+    restart: unless-stopped
+
+networks:
+  essay-genius-network:
+    driver: bridge
+
+volumes:
+  essay-genius-identity-service-postgres-data:
+  essay-genius-identity-service-pgadmin-data:
+  essay-genius-identity-service-redis-data:
+  essay-genius-kafka-broker-data:
+  essay-service-mongodb-data:

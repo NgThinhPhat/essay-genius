@@ -1,0 +1,48 @@
+server:
+  port: 10001
+  servlet:
+    context-path: /essay
+
+spring:
+  config:
+    import: file:env.properties
+  application:
+    name: essay-service
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    default-locale: en
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    prefer-ip-address: true
+
+logging:
+  level:
+    org.springframework: DEBUG
+#_______________________________________API DOCUMENT_______________________________________
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui
+  show-actuator: true
+
+openapi:
+  service:
+    api-docs: essay-service-rest-api
+    title: Essay Service REST API
+    description: This is the API documentation for Essay Service.
+    version: 1.0.0
+    server-url: http://localhost:${server.port}${server.servlet.context-path}
+    server-description: Essay Genius Backend API service For Development
+
+
+gateway:
+  domain: ${GATEWAY_DOMAIN:localhost}
+  port: ${GATEWAY_PORT:9000}

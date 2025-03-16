@@ -1,9 +1,62 @@
 server:
-  port: 8081
+  port: 10000
+  servlet:
+    context-path: /identity
 
 spring:
+  config:
+    import: file:env.properties
   application:
-    name: user-service
+    name: identity-service
+  #_______________________________________DATABASE_______________________________________
+  datasource:
+    url: jdbc:postgresql://localhost:5432/identity_service_db
+    username: ${POSTGRES_USER:eternity_user}
+    password: ${POSTGRES_PASSWORD:a_will_eternal}
+    hikari:
+      driver-class-name: org.postgresql.Driver
+      maximum-pool-size: 10
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    default-locale: en
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: identity-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+  mail:
+    from: ${FROM_MAIL}
+    host: smtp.gmail.com
+    port: 587
+    verify-link: ${VERIFY_LINK:http://localhost:8082/identity/auth/verify-email-by-token}
+    username: ${FROM_MAIL}
+    password: ${SMTP_PASSWORD}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 eureka:
   client:
@@ -11,3 +64,37 @@ eureka:
       defaultZone: http://localhost:8761/eureka
   instance:
     prefer-ip-address: true
+
+logging:
+  level:
+    org.springframework: DEBUG
+
+jwt:
+  accessSignerKey: ${accessSignerKey}
+  refreshSignerKey: ${refreshSignerKey}
+  valid-duration: 1800 # in seconds
+  refreshable-duration: 2592000 # in seconds
+
+#_______________________________________API DOCUMENT_______________________________________
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui
+  show-actuator: true
+
+openapi:
+  service:
+    api-docs: identity-service-rest-api
+    title: Identity Service REST API
+    description: This is the API documentation for Identity Service.
+    version: 1.0.0
+    server-url: http://localhost:${server.port}${server.servlet.context-path}
+    server-description: Essay Genius Backend API service For Development
+
+
+gateway:
+  domain: ${GATEWAY_DOMAIN:localhost}
+  port: ${GATEWAY_PORT:9000}
