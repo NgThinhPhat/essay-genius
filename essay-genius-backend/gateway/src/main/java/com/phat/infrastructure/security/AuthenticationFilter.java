@@ -61,10 +61,10 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             "/identity/api-docs/**",
             "/identity/v3/api-docs/**",
             "/identity/swagger-ui/**",
-            "v3/api-docs/**",
-            "api-docs/**",
+            "/essay/swagger-ui/**",
+            "/essay/api-docs/**",
             "/swagger-ui/**",
-            "/profile/api-docs/**"
+            "/api-docs/**",
     };
 
     List<Locale> LOCALES = List.of(

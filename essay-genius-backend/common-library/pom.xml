@@ -25,11 +25,7 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${openapi.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
-            <version>${openapi.version}</version>
-        </dependency>
+
         <!--KAFKA-->
         <dependency>
             <groupId>org.springframework.kafka</groupId>

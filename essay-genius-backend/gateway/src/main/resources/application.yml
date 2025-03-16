@@ -4,8 +4,6 @@ server:
 springdoc:
   swagger-ui:
     path: /swagger-ui
-  api-docs:
-    enabled: true
 
 spring:
   application:
