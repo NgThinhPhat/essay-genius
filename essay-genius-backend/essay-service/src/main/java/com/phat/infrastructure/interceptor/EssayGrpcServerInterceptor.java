@@ -4,9 +4,9 @@ import io.grpc.Metadata;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
-import org.springframework.grpc.server.GlobalServerInterceptor;
+import net.devh.boot.grpc.server.interceptor.GrpcGlobalServerInterceptor;
 
-@GlobalServerInterceptor
+@GrpcGlobalServerInterceptor
 public class EssayGrpcServerInterceptor implements ServerInterceptor {
 
     @Override

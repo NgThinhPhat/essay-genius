@@ -4,7 +4,7 @@ import com.phat.grpc.essay.GreetingRequest;
 import com.phat.grpc.essay.GreetingResponse;
 import com.phat.grpc.essay.GreetingServiceGrpc;
 import io.grpc.stub.StreamObserver;
-import org.springframework.grpc.server.service.GrpcService;
+import net.devh.boot.grpc.server.service.GrpcService;
 
 @GrpcService
 public class EssayGrpcServiceImpl extends GreetingServiceGrpc.GreetingServiceImplBase {

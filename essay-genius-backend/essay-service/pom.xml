@@ -18,11 +18,11 @@
     </properties>
 
     <dependencies>
-<!--        <dependency>-->
-<!--            <groupId>net.devh</groupId>-->
-<!--            <artifactId>grpc-server-spring-boot-starter</artifactId>-->
-<!--            <version>${spring-grpc.version}</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>net.devh</groupId>
+            <artifactId>grpc-server-spring-boot-starter</artifactId>
+            <version>${spring-grpc.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.phat</groupId>
             <artifactId>common-library</artifactId>
