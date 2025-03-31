@@ -35,9 +35,10 @@
         <spring-cloud.version>2024.0.0</spring-cloud.version>
         <jedis.version>5.2.0</jedis.version>
         <!-- GRPC -->
-        <grpc.version>1.70.0</grpc.version>
-    <protobuf-java.version>3.25.6</protobuf-java.version>
-    <spring-grpc.version>0.5.0</spring-grpc.version>
+        <spring-grpc.version>3.1.0.RELEASE</spring-grpc.version>
+        <protobuf-plugin.version>0.6.1</protobuf-plugin.version>
+        <io.grpc.version>1.66.0</io.grpc.version>
+
     </properties>
     <dependencies>
         <dependency>
@@ -86,13 +87,6 @@
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
                 <version>${spring-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.grpc</groupId>
-                <artifactId>spring-grpc-dependencies</artifactId>
-                <version>${spring-grpc.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
