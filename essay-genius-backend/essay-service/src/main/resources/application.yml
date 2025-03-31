@@ -3,6 +3,9 @@ server:
   servlet:
     context-path: /essay
 
+grpc:
+  port: 10002
+
 spring:
   config:
     import: file:env.properties
@@ -12,6 +15,14 @@ spring:
     basename: i18n/messages
     encoding: UTF-8
     default-locale: en
+  data:
+    mongodb:
+      username: eternity_user
+      password: a_will_eternal
+      host: localhost
+#      uri: mongodb://eternity_user:a_will_eternal@essay-service-mongodb:27017/essaydb?authSource=admin
+      database: essaydb
+      authentication-database: admin
 
 eureka:
   client:
