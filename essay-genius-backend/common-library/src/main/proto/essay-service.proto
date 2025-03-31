@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package com.phat.grpc.essay;
+option java_multiple_files = true;
+
+service GreetingService {
+  rpc greeting(GreetingRequest) returns (GreetingResponse) {
+  }
+}
+
+message GreetingRequest {
+  string message = 1;
+}
+
+message GreetingResponse {
+  string message = 1;
+}

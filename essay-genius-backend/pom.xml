@@ -34,6 +34,10 @@
         <mapstruct.version>1.6.0</mapstruct.version>
         <spring-cloud.version>2024.0.0</spring-cloud.version>
         <jedis.version>5.2.0</jedis.version>
+        <!-- GRPC -->
+        <grpc.version>1.70.0</grpc.version>
+    <protobuf-java.version>3.25.6</protobuf-java.version>
+    <spring-grpc.version>0.5.0</spring-grpc.version>
     </properties>
     <dependencies>
         <dependency>
@@ -85,7 +89,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
+            <dependency>
+                <groupId>org.springframework.grpc</groupId>
+                <artifactId>spring-grpc-dependencies</artifactId>
+                <version>${spring-grpc.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
