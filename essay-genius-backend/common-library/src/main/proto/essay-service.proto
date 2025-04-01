@@ -1,17 +1,15 @@
 syntax = "proto3";
 
-package com.phat.grpc.essay;
-option java_multiple_files = true;
+package ai;
 
-service GreetingService {
-  rpc greeting(GreetingRequest) returns (GreetingResponse) {
-  }
+service EssayAnalysis {
+  rpc AnalyzeEssay (EssayRequest) returns (EssayResponse);
 }
 
-message GreetingRequest {
-  string message = 1;
+message EssayRequest {
+  string essay_text = 1;
 }
 
-message GreetingResponse {
-  string message = 1;
+message EssayResponse {
+  string feedback = 1;
 }

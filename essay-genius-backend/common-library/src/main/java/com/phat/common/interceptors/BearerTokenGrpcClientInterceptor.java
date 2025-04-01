@@ -45,7 +45,6 @@ public class BearerTokenGrpcClientInterceptor implements ClientInterceptor {
             public void sendMessage(ReqT message) {
                 super.sendMessage(message);
             }
-
         };
     }
 
