@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package ai;
+
+service AIService {
+  rpc Predict (PredictRequest) returns (PredictResponse);
+}
+
+message PredictRequest {
+  string input_data = 1;
+}
+
+message PredictResponse {
+  string result = 1;
+}

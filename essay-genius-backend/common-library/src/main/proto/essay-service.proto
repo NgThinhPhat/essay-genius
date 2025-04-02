@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package ai;
+package com.phat.grpc.essay;
 
 service EssayAnalysis {
   rpc AnalyzeEssay (EssayRequest) returns (EssayResponse);
