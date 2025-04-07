@@ -4,7 +4,19 @@ server:
     context-path: /essay
 
 grpc:
-  port: 10002
+  server:
+    port: 9091
+    negotiationType: plaintext
+    enableReflection: true
+    maxInboundMessageSize: 104857600 # 100MB
+    maxInboundMetadataSize: 1048576 # 1MB
+  client:
+    essay-service:
+      address: static://localhost:9090
+      negotiationType: plaintext
+#      deadline: 180000 # 3 minutes
+#      enableKeepAlive: true
+#      keepAliveWithoutCalls: true
 
 spring:
   config:
@@ -31,9 +43,9 @@ eureka:
   instance:
     prefer-ip-address: true
 
-logging:
-  level:
-    org.springframework: DEBUG
+#logging:
+#  level:
+#    org.springframework: DEBUG
 #_______________________________________API DOCUMENT_______________________________________
 springdoc:
   api-docs:

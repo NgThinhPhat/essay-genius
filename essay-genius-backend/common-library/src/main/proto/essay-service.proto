@@ -2,14 +2,15 @@ syntax = "proto3";
 
 package com.phat.grpc.essay;
 
-service EssayAnalysis {
-  rpc AnalyzeEssay (EssayRequest) returns (EssayResponse);
+service EssayService {
+  rpc Scoring (ScoringRequest) returns (ScoringResponse);
 }
 
-message EssayRequest {
-  string essay_text = 1;
+message ScoringRequest {
+  string essay_prompt = 1;
+  string essay_text = 2;
 }
 
-message EssayResponse {
-  string feedback = 1;
+message ScoringResponse {
+  string result = 1;
 }
