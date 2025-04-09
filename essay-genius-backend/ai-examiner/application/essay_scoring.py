@@ -8,6 +8,9 @@ from application.proto_message import ScoringResponse
 from google import genai
 from google.genai import types
 from protobuf import essay_service_pb2_grpc
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class EssayServiceServicer(essay_service_pb2_grpc.EssayServiceServicer):
@@ -15,7 +18,7 @@ class EssayServiceServicer(essay_service_pb2_grpc.EssayServiceServicer):
         essay_prompt = request.essay_prompt
         essay_text = request.essay_text
         client = genai.Client(
-            api_key="AIzaSyCVjWeSZJlkxWu7At7navdn01BGPzmOlqw",
+            api_key=os.environ.get("GEMINI_API_KEY"),
         )
 
         model = "gemini-2.0-flash"
