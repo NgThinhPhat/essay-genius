@@ -1,4 +1,4 @@
-import application.testgrpc as testgrpc
+import application.essay_scoring as essay_scoring
 
 if __name__ == "__main__":
-    testgrpc.serve()
+    essay_scoring.serve()
