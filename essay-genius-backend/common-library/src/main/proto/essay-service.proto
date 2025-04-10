@@ -12,5 +12,7 @@ message ScoringRequest {
 }
 
 message ScoringResponse {
-  string result = 1;
+  bool valid = 1;
+  string result = 2;
 }
+

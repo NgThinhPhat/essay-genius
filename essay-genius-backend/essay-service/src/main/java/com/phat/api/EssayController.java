@@ -1,8 +1,7 @@
 package com.phat.api;
 
-import com.phat.api.model.request.EssayScoringRequest;
-import com.phat.api.model.response.CommonResponse;
-import com.phat.api.model.response.EssayScoreResponse;
+import com.phat.api.model.request.EssayTaskTwoScoringRequest;
+import com.phat.api.model.response.EssayScoringWrapper;
 import com.phat.app.service.AIEssayGrpcClient;
 import com.phat.domain.irepository.EssayRepository;
 import com.phat.domain.model.Essay;
@@ -36,11 +35,8 @@ public class EssayController {
     }
 
     @PostMapping("/scoring-essay")
-    public String scoring(@RequestBody EssayScoringRequest essayScoringRequest) throws Exception {
-//        return ResponseEntity.ok()
-//                .body(EssayScoreResponse.builder()
-//                        .result(aiEssayGrpcClient.getScores(essayScoringRequest.essayPrompt(), essayScoringRequest.essayText()))
-//                        .build());
-        return aiEssayGrpcClient.getScores(essayScoringRequest.essayPrompt(), essayScoringRequest.essayText());
+    public ResponseEntity<EssayScoringWrapper<?>> scoring(@Valid @RequestBody EssayTaskTwoScoringRequest essayScoringRequest) throws Exception {
+        return ResponseEntity.ok()
+                .body(aiEssayGrpcClient.getScores(essayScoringRequest.essayPrompt(), essayScoringRequest.essayText()));
     }
 }

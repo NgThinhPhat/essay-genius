@@ -1,13 +1,13 @@
-import base64
 import os
 from concurrent import futures
 import grpc
-import requests
 from application.proto_message import ScoringResponse
 from google import genai
 from google.genai import types
 from protobuf import essay_service_pb2_grpc
 from dotenv import load_dotenv
+import json
+import re
 
 load_dotenv()
 
@@ -53,7 +53,8 @@ The prompt is missing or meaningless.
 ✅ If valid, return the following JSON structure:
 {
   \"valid\": true,
-  \"scores\": {
+  \"result\":{
+    \"scores\": {
     \"task_response\": { \"band\": number, \"explanation\": string },
     \"coherence_and_cohesion\": { \"band\": number, \"explanation\": string },
     \"lexical_resource\": { \"band\": number, \"explanation\": string },
@@ -70,7 +71,8 @@ The prompt is missing or meaningless.
   ],
   \"improvement_tips\": [string],
   \"rewritten_paragraph\": string
-}
+    }
+  }
 If invalid, return this JSON structure:
 
 {
@@ -210,6 +212,7 @@ Now, assemble the JSON output."""
                         text="""```json
 {
   \"valid\": true,
+  \"result\":{
   \"scores\": {
     \"task_response\": {
       \"band\": 6,
@@ -276,6 +279,8 @@ Now, assemble the JSON output."""
     \"Proofread for Grammar: Pay close attention to common errors like verb tenses/forms, articles (a/an/the), prepositions, and subject-verb agreement.\"
   ],
   \"rewritten_paragraph\": \"Governments possess several powerful tools to address this escalating water demand. Firstly, they can implement comprehensive public awareness campaigns emphasizing water conservation techniques, educating citizens on simple yet effective ways to reduce daily consumption, such as installing water-efficient appliances or practicing rainwater harvesting. Secondly, enforcing stricter regulations on industrial and agricultural water use is paramount. This could involve setting quotas, mandating the treatment of wastewater before discharge, and imposing significant penalties on entities polluting freshwater sources like rivers and aquifers. Finally, significant investment in infrastructure is crucial; this includes constructing advanced desalination plants in coastal areas to convert seawater into potable water and upgrading existing water treatment facilities to recycle wastewater for non-potable uses like irrigation and industrial processes, thereby augmenting the overall freshwater supply.\"
+
+  }
 }
 ```"""
                     ),
@@ -303,7 +308,16 @@ Now, assemble the JSON output."""
         result = "".join(
             str(chunk.text) for chunk in chunks if hasattr(chunk, "text") and chunk.text
         )
-        return ScoringResponse(result=result)
+
+        cleaned_result = re.sub(
+            r"^```json\s*|\s*```$", "", result.strip(), flags=re.DOTALL
+        )
+        parsed_json = json.loads(cleaned_result)
+        valid = parsed_json.get("valid", False)
+        result2 = parsed_json.get("result", "Invalid input")
+        if not isinstance(result2, str):
+            result2 = json.dumps(result2, ensure_ascii=False)
+        return ScoringResponse(valid=valid, result=result2)
 
 
 def serve():

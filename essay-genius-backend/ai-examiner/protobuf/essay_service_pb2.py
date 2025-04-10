@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13\x65ssay-service.proto\x12\x13\x63om.phat.grpc.essay\":\n\x0eScoringRequest\x12\x14\n\x0c\x65ssay_prompt\x18\x01 \x01(\t\x12\x12\n\nessay_text\x18\x02 \x01(\t\"!\n\x0fScoringResponse\x12\x0e\n\x06result\x18\x01 \x01(\t2d\n\x0c\x45ssayService\x12T\n\x07Scoring\x12#.com.phat.grpc.essay.ScoringRequest\x1a$.com.phat.grpc.essay.ScoringResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13\x65ssay-service.proto\x12\x13\x63om.phat.grpc.essay\":\n\x0eScoringRequest\x12\x14\n\x0c\x65ssay_prompt\x18\x01 \x01(\t\x12\x12\n\nessay_text\x18\x02 \x01(\t\"0\n\x0fScoringResponse\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x0e\n\x06result\x18\x02 \x01(\t2d\n\x0c\x45ssayService\x12T\n\x07Scoring\x12#.com.phat.grpc.essay.ScoringRequest\x1a$.com.phat.grpc.essay.ScoringResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,7 +34,7 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_SCORINGREQUEST']._serialized_start=44
   _globals['_SCORINGREQUEST']._serialized_end=102
   _globals['_SCORINGRESPONSE']._serialized_start=104
-  _globals['_SCORINGRESPONSE']._serialized_end=137
-  _globals['_ESSAYSERVICE']._serialized_start=139
-  _globals['_ESSAYSERVICE']._serialized_end=239
+  _globals['_SCORINGRESPONSE']._serialized_end=152
+  _globals['_ESSAYSERVICE']._serialized_start=154
+  _globals['_ESSAYSERVICE']._serialized_end=254
 # @@protoc_insertion_point(module_scope)
