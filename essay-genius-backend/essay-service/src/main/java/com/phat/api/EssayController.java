@@ -28,8 +28,8 @@ public class EssayController {
     @PostMapping
     public Essay submitEssay(@Valid @RequestBody Essay essay) {
         Essay newEssay = Essay.builder()
-                .title(essay.getTitle())
-                .content(essay.getContent())
+                .essayPrompt(essay.getEssayPrompt())
+                .essayText(essay.getEssayText())
                 .userId(essay.getUserId())
                 .build();
         return essayRepository.save(essay);

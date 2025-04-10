@@ -13,8 +13,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Essay extends AbstractEntity{
     @Id
     private String id;
-    private String title;
-    private String content;
+    private String essayPrompt;
+    private String essayText;
+    private String result;
+    private double band;
     private String userId;
 }
 
