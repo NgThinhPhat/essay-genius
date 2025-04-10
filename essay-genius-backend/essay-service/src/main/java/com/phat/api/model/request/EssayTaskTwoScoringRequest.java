@@ -2,7 +2,7 @@ package com.phat.api.model.request;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record EssayScoringRequest (
+public record EssayTaskTwoScoringRequest(
         @NotBlank
         String essayPrompt,
 

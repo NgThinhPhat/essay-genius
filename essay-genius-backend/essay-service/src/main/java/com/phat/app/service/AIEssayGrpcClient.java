@@ -1,5 +1,9 @@
 package com.phat.app.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.phat.api.model.response.EssayScoringWrapper;
+import com.phat.api.model.response.EssayTaskTwoScoreResponse;
 import com.phat.app.exception.AppException;
 import com.phat.grpc.essay.EssayServiceGrpc;
 import com.phat.grpc.essay.EssayServiceOuterClass;
@@ -14,7 +18,8 @@ public class AIEssayGrpcClient {
     @GrpcClient("essay-service")
     private EssayServiceGrpc.EssayServiceBlockingStub stub;
 
-    public String getScores(String essayPrompt, String essayText) throws AppException {
+
+    public EssayScoringWrapper<?> getScores(String essayPrompt, String essayText) throws AppException {
         EssayServiceOuterClass.ScoringRequest request = EssayServiceOuterClass.ScoringRequest.newBuilder()
                 .setEssayPrompt(essayPrompt)
                 .setEssayText(essayText)
@@ -22,12 +27,28 @@ public class AIEssayGrpcClient {
 
         try {
             EssayServiceOuterClass.ScoringResponse response = stub.scoring(request);
-            return response.getResult();
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+            if (response.getValid()) {
+                EssayTaskTwoScoreResponse essayTaskTwoScoreResponse =
+                        objectMapper.readValue(response.getResult(), EssayTaskTwoScoreResponse.class);
+
+                return EssayScoringWrapper.<EssayTaskTwoScoreResponse>builder()
+                        .valid(response.getValid())
+                        .result(essayTaskTwoScoreResponse)
+                        .build();
+            } else {
+                return EssayScoringWrapper.<String>builder()
+                        .valid(response.getValid())
+                        .result(response.getResult())
+                        .build();
+            }
         } catch (Exception e) {
-            System.err.println("gRPC Error: " + e.getMessage());
             log.error("gRPC Error: " + e.getMessage());
             throw new RuntimeException("gRPC request failed", e);
         }
     }
+
 
 }
