@@ -2,6 +2,9 @@ syntax = "proto3";
 
 package com.phat.grpc.essay;
 
+option java_outer_classname = "proto";
+option java_multiple_files = true;
+
 service EssayService {
   rpc Scoring (ScoringRequest) returns (ScoringResponse);
 }

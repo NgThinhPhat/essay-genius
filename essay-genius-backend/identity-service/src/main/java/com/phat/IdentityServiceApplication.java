@@ -1,18 +1,27 @@
 package com.phat;
 
-import lombok.extern.slf4j.Slf4j;
+import com.phat.common.components.CustomJwtDecoder;
+import com.phat.common.configs.CommonSecurityConfig;
+import com.phat.common.exception.GlobalExceptionHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.FilterType;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.phat", "com.phat.common"})
+@ComponentScan(basePackages = {"com.phat", "com.phat.common"},
+        excludeFilters = @ComponentScan.Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                classes = {
+                        CommonSecurityConfig.class,
+                        CustomJwtDecoder.class,
+                        GlobalExceptionHandler.class
+                }
+        ))
 @EnableDiscoveryClient
 public class IdentityServiceApplication {
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         SpringApplication.run(IdentityServiceApplication.class, args);
     }
 }

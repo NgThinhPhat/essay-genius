@@ -14,13 +14,16 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EssayTaskTwoScoreResponse {
     private Scores scores;
-    private double overallBand;
+    private Double overallBand;
     private String overallFeedback;
     private List<Correction> corrections;
     private List<String> improvementTips;
     private String rewrittenParagraph;
 
+    @Builder
     @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Scores {
         private ScoreDetail taskResponse;
@@ -29,6 +32,9 @@ public class EssayTaskTwoScoreResponse {
         private ScoreDetail grammaticalRangeAndAccuracy;
     }
 
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ScoreDetail {
@@ -36,6 +42,9 @@ public class EssayTaskTwoScoreResponse {
         private String explanation;
     }
 
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Correction {

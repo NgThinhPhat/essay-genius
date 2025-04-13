@@ -1,12 +1,13 @@
-package com.phat.app.service;
+package com.phat.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.phat.api.model.response.EssayScoringWrapper;
 import com.phat.api.model.response.EssayTaskTwoScoreResponse;
-import com.phat.app.exception.AppException;
+import com.phat.common.exception.AppException;
 import com.phat.grpc.essay.EssayServiceGrpc;
-import com.phat.grpc.essay.EssayServiceOuterClass;
+import com.phat.grpc.essay.ScoringRequest;
+import com.phat.grpc.essay.ScoringResponse;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
@@ -18,15 +19,14 @@ public class AIEssayGrpcClient {
     @GrpcClient("essay-service")
     private EssayServiceGrpc.EssayServiceBlockingStub stub;
 
-
     public EssayScoringWrapper<?> getScores(String essayPrompt, String essayText) throws AppException {
-        EssayServiceOuterClass.ScoringRequest request = EssayServiceOuterClass.ScoringRequest.newBuilder()
+        ScoringRequest request = ScoringRequest.newBuilder()
                 .setEssayPrompt(essayPrompt)
                 .setEssayText(essayText)
                 .build();
 
         try {
-            EssayServiceOuterClass.ScoringResponse response = stub.scoring(request);
+            ScoringResponse response = stub.scoring(request);
 
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
@@ -49,6 +49,4 @@ public class AIEssayGrpcClient {
             throw new RuntimeException("gRPC request failed", e);
         }
     }
-
-
 }

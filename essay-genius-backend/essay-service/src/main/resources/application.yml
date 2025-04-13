@@ -1,22 +1,29 @@
 server:
-  port: 10001
+  port: 10002
   servlet:
     context-path: /essay
 
 grpc:
   server:
-    port: 9091
+    port: 9081
     negotiationType: plaintext
     enableReflection: true
     maxInboundMessageSize: 104857600 # 100MB
     maxInboundMetadataSize: 1048576 # 1MB
   client:
     essay-service:
-      address: static://localhost:9090
+      address: static://localhost:9083
       negotiationType: plaintext
-#      deadline: 180000 # 3 minutes
-#      enableKeepAlive: true
-#      keepAliveWithoutCalls: true
+
+    identity-service:
+      address: static://localhost:9082
+      negotiationType: plaintext
+
+jwt:
+  accessSignerKey: ${accessSignerKey}
+  refreshSignerKey: ${refreshSignerKey}
+  valid-duration: 1800 # in seconds
+  refreshable-duration: 2592000 # in seconds
 
 spring:
   config:
@@ -64,7 +71,6 @@ openapi:
     version: 1.0.0
     server-url: http://localhost:${server.port}${server.servlet.context-path}
     server-description: Essay Genius Backend API service For Development
-
 
 gateway:
   domain: ${GATEWAY_DOMAIN:localhost}

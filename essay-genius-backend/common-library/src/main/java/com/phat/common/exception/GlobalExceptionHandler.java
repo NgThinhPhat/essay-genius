@@ -1,23 +1,20 @@
-package com.phat.app.exception;
+package com.phat.common.exception;
 
-import com.phat.api.model.response.CommonResponse;
+import com.phat.common.response.CommonResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.NoSuchMessageException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import org.springframework.context.NoSuchMessageException;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.phat.app.exception.AppErrorCode.*;
-import static com.phat.app.helper.Constants.MICROSERVICE_NAME;
 import static com.phat.common.components.Translator.getLocalizedMessage;
+import static com.phat.common.exception.AppErrorCode.*;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @RestControllerAdvice
 @Slf4j
@@ -101,7 +98,7 @@ public class GlobalExceptionHandler {
                 .build());
     }
     private void errorLogging(String reason, Exception exception) {
-        log.error("[{}]: Reason: {} | class: {} | line: {}", MICROSERVICE_NAME,
+        log.error("[{}]: Reason: {} | class: {} | line: {}", "Common",
                 reason, exception.getClass(), exception.getStackTrace()[0].getLineNumber());
     }
 }

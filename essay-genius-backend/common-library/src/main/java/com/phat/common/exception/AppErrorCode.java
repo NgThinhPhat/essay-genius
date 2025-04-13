@@ -1,4 +1,4 @@
-package com.phat.app.exception;
+package com.phat.common.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,6 +28,7 @@ public enum AppErrorCode {
     TOKEN_REVOKED("auth/token-revoked", "token_revoked"),
     TOKEN_BLACKLISTED("auth/token-blacklisted", "token_blacklisted"),
     INVALID_SIGNATURE("auth/invalid-signature", "invalid_signature"),
+    INTROSPECT_FAILED("auth/introspect-failed", "introspect_failed"),
 
     // Verification Errors
     CODE_INVALID("auth/code-invalid", "code_invalid"),

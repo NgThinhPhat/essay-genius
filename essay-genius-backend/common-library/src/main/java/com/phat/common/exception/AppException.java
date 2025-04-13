@@ -1,5 +1,6 @@
-package com.phat.app.exception;
+package com.phat.common.exception;
 
+import io.grpc.Status;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
@@ -17,9 +18,17 @@ public class AppException extends RuntimeException {
         this.moreInfo = moreInfo;
     }
 
+    public AppException(AppErrorCode appErrorCode, Status grpcStatus, String reason, Object... moreInfo) {
+        super(appErrorCode.getMessage());
+        this.reason = reason;
+        this.appErrorCode = appErrorCode;
+        this.grpcStatus = grpcStatus;
+        this.moreInfo = moreInfo;
+    }
     final AppErrorCode appErrorCode;
-    final HttpStatus httpStatus;
+    HttpStatus httpStatus;
     final String reason;
+    Status grpcStatus;
     final Object[] moreInfo;
 
 }

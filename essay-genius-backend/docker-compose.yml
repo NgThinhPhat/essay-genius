@@ -116,6 +116,20 @@ services:
       - essay-genius-network
     restart: unless-stopped
 
+  interaction-service-mongodb:
+    image: mongo:latest
+    container_name: interaction-service-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: eternity_user
+      MONGO_INITDB_ROOT_PASSWORD: a_will_eternal
+    volumes:
+      - interaction-service-mongodb-data:/data/db
+    ports:
+      - "27018:27017"
+    networks:
+      - essay-genius-network
+    restart: unless-stopped
+
 networks:
   essay-genius-network:
     driver: bridge
@@ -126,3 +140,4 @@ volumes:
   essay-genius-identity-service-redis-data:
   essay-genius-kafka-broker-data:
   essay-service-mongodb-data:
+  interaction-service-mongodb-data:

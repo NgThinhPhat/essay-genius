@@ -2,9 +2,7 @@ package com.phat.api;
 
 import com.phat.api.model.request.EssayTaskTwoScoringRequest;
 import com.phat.api.model.response.EssayScoringWrapper;
-import com.phat.app.service.AIEssayGrpcClient;
-import com.phat.domain.irepository.EssayRepository;
-import com.phat.domain.model.Essay;
+import com.phat.app.service.impl.AIEssayGrpcClient;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,22 +14,11 @@ import java.util.List;
 @RequestMapping("/api/essays")
 @RequiredArgsConstructor
 public class EssayController {
-    private final EssayRepository essayRepository;
     private final AIEssayGrpcClient aiEssayGrpcClient;
 
-    @GetMapping("/{userId}")
-    public List<Essay> getUserEssays(@PathVariable String userId) {
-        return essayRepository.findByUserId(userId);
-    }
-
-    @PostMapping
-    public Essay submitEssay(@Valid @RequestBody Essay essay) {
-        Essay newEssay = Essay.builder()
-                .essayPrompt(essay.getEssayPrompt())
-                .essayText(essay.getEssayText())
-                .userId(essay.getUserId())
-                .build();
-        return essayRepository.save(essay);
+    @GetMapping("hello")
+    public String hello() {
+        return "Hello";
     }
 
     @PostMapping("/scoring-essay")

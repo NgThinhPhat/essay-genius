@@ -73,12 +73,12 @@ The prompt is missing or meaningless.
   \"rewritten_paragraph\": string
     }
   }
-If invalid, return this JSON structure:
-
+X If invalid, must return this JSON structure:
 {
   \"valid\": false,
   \"result\": \"Explain clearly why this input is invalid — for example, 'Essay is mostly gibberish', 'Prompt is missing', or 'Essay does not address the question'.\"
 }
+
 Now analyze the following input:
 essay_prompt:
 \"You should spend about 40 minutes on this task. Write about the following topic
@@ -312,12 +312,16 @@ Now, assemble the JSON output."""
         cleaned_result = re.sub(
             r"^```json\s*|\s*```$", "", result.strip(), flags=re.DOTALL
         )
-        parsed_json = json.loads(cleaned_result)
-        valid = parsed_json.get("valid", False)
-        result2 = parsed_json.get("result", "Invalid input")
-        if not isinstance(result2, str):
-            result2 = json.dumps(result2, ensure_ascii=False)
-        return ScoringResponse(valid=valid, result=result2)
+        try:
+            parsed_json = json.loads(cleaned_result)
+            valid = parsed_json.get("valid", False)
+            result2 = parsed_json.get("result", "Invalid input")
+            if not isinstance(result2, str):
+                result2 = json.dumps(result2, ensure_ascii=False)
+            return ScoringResponse(valid=valid, result=result2)
+        except json.JSONDecodeError as e:
+            print("❌ JSON parse error:", e)
+            return ScoringResponse(valid=False, result=cleaned_result)
 
 
 def serve():
@@ -325,9 +329,9 @@ def serve():
     essay_service_pb2_grpc.add_EssayServiceServicer_to_server(
         EssayServiceServicer(), server
     )
-    server.add_insecure_port("[::]:9090")
+    server.add_insecure_port("[::]:9093")
     server.start()
-    print("AI IELTS Scoring Service running on port 9090...")
+    print("AI IELTS Scoring Service running on port 9093...")
     server.wait_for_termination()
 
 

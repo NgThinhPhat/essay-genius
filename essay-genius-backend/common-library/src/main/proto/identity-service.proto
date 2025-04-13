@@ -1,0 +1,34 @@
+syntax = "proto3";
+package com.phat.grpc.identity;
+
+option java_outer_classname = "proto";
+option java_multiple_files = true;
+
+message GetCurrentUserRequest {
+  string user_id = 1;
+}
+
+message GetCurrentUserResponse {
+  string user_id = 1;
+  string name = 2;
+  string email = 3;
+  string role = 4;
+}
+
+message GetCurrentUserIdResponse{
+  string user_id = 1;
+}
+
+message IntrospectRequest {
+  string token = 1;
+}
+
+message IntrospectResponse {
+  bool valid = 1;
+}
+
+service IdentityService {
+  rpc introspect(IntrospectRequest) returns (IntrospectResponse) {}
+  rpc GetCurrentUser (GetCurrentUserRequest) returns (GetCurrentUserResponse);
+  rpc GetCurrentUserId (GetCurrentUserRequest) returns (GetCurrentUserResponse);
+}

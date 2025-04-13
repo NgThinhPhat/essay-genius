@@ -36,7 +36,7 @@ import java.util.Locale;
 
 import static com.phat.app.exception.AppErrorCode.TOKEN_INVALID;
 import static com.phat.app.helper.Constants.MICROSERVICE_NAME;
-import static com.phat.common.components.Translator.getLocalizedMessage;
+import static com.phat.infrastructure.component.Translator.getLocalizedMessage;
 
 @Component
 @Slf4j
@@ -63,6 +63,8 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             "/identity/swagger-ui/**",
             "/essay/swagger-ui/**",
             "/essay/api-docs/**",
+            "/interaction/swagger-ui/**",
+            "/interaction/api-docs/**",
             "/swagger-ui/**",
             "/api-docs/**",
     };

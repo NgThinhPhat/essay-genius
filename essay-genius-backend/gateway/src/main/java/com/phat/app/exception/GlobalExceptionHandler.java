@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import reactor.core.publisher.Mono;
 
 import static com.phat.app.helper.Constants.MICROSERVICE_NAME;
-import static com.phat.common.components.Translator.getLocalizedMessage;
+import static com.phat.infrastructure.component.Translator.getLocalizedMessage;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @RestControllerAdvice

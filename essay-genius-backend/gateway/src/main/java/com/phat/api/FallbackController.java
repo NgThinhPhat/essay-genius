@@ -16,9 +16,9 @@ public class FallbackController {
         throw new AppException(FALLBACK_ERROR, INTERNAL_SERVER_ERROR, "Identity service is down", "Identity");
     }
 
-    @GetMapping("/profile/fallback")
+    @GetMapping("/essay/fallback")
     public Mono<Void> getProfileFallback() {
-        throw new AppException(FALLBACK_ERROR, INTERNAL_SERVER_ERROR, "Profile service is down", "Profile");
+        throw new AppException(FALLBACK_ERROR, INTERNAL_SERVER_ERROR, "Essay service is down", "Essay");
     }
 
 }
