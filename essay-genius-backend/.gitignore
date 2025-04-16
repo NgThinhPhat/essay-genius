@@ -66,5 +66,6 @@ replay_pid*
 *.iml
 
 env.properties
+.env
 
 
