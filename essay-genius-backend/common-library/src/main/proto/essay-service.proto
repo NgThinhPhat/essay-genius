@@ -1,21 +1,14 @@
 syntax = "proto3";
-
+import "google/protobuf/empty.proto";
 package com.phat.grpc.essay;
 
 option java_outer_classname = "proto";
 option java_multiple_files = true;
 
 service EssayService {
-  rpc Scoring (ScoringRequest) returns (ScoringResponse);
+  rpc GetEssayIds (google.protobuf.Empty) returns (GetEssayIdsResponse);
 }
 
-message ScoringRequest {
-  string essay_prompt = 1;
-  string essay_text = 2;
+message GetEssayIdsResponse {
+  repeated string essay_ids = 1;
 }
-
-message ScoringResponse {
-  bool valid = 1;
-  string result = 2;
-}
-

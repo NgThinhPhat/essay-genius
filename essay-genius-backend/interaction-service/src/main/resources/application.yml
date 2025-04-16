@@ -12,11 +12,11 @@ grpc:
     maxInboundMetadataSize: 1048576 # 1MB
   client:
     essay-service:
-      address: static://localhost:9083
+      address: static://localhost:9082
       negotiationType: plaintext
 
     identity-service:
-      address: static://localhost:9082
+      address: static://localhost:9083
       negotiationType: plaintext
 
 jwt:

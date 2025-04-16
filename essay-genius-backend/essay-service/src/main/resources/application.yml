@@ -5,18 +5,22 @@ server:
 
 grpc:
   server:
-    port: 9081
+    port: 9082
     negotiationType: plaintext
     enableReflection: true
     maxInboundMessageSize: 104857600 # 100MB
     maxInboundMetadataSize: 1048576 # 1MB
   client:
-    essay-service:
-      address: static://localhost:9083
+    ai-service:
+      address: static://localhost:9081
       negotiationType: plaintext
 
     identity-service:
-      address: static://localhost:9082
+      address: static://localhost:9083
+      negotiationType: plaintext
+
+    interaction-service:
+      address: static://localhost:9084
       negotiationType: plaintext
 
 jwt:

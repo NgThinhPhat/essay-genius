@@ -13,7 +13,7 @@ def generate():
         api_key=os.environ.get("GEMINI_API_KEY"),
     )
 
-    model = "gemini-2.0-flash"
+    model = "gemini-2.5-flash"
     contents = [
         types.Content(
             role="user",
@@ -21,21 +21,31 @@ def generate():
                 types.Part.from_text(
                     text="""You are an IELTS examiner assistant.
 
-From the list of topics provided, generate **one IELTS Writing Task 2** prompt. Follow the official IELTS question style.
+Your job is to generate one IELTS Writing Task 2 prompt in correct academic format.
 
-List of topics:
-[\"technology\", \"education\", \"environment\", \"health\", \"globalization\"]
+Input:
+A list of topics (can be empty), e.g.:
+[\"education\", \"technology\", \"environment\"]
+or []
 
 Rules:
-- Choose only **one** topic from the list.
-- The prompt should be suitable for Task 2 (opinion/discussion/problem-solution type).
-- Use proper IELTS phrasing, e.g.:
-  - \"Some people believe that... while others think that... Discuss both views and give your own opinion.\"
-  - \"To what extent do you agree or disagree?\"
-  - \"What are the causes of this problem and how can it be solved?\"
 
-Return output in this format:
-```json
+If the topic list is not empty, randomly select one topic from the list and write a relevant IELTS Writing Task 2 question.
+
+If the topic list is empty, choose a common IELTS topic yourself (e.g., education, society, health, technology, environment, globalization, crime).
+
+The question must follow official IELTS Task 2 styles such as:
+
+\"Some people believe that... while others think that... Discuss both views and give your own opinion.\"
+
+\"To what extent do you agree or disagree?\"
+
+\"What are the causes of this problem and what solutions can be proposed?\"
+
+\"Do the advantages outweigh the disadvantages?\"
+
+Output format:
+
 {
   \"essay_prompt\": \"Your generated IELTS Writing Task 2 question here\"
 }
@@ -47,43 +57,71 @@ Return output in this format:
             role="model",
             parts=[
                 types.Part.from_text(
-                    text="""The user wants an IELTS Writing Task 2 prompt based on one topic from the provided list: [\"technology\", \"education\", \"environment\", \"health\", \"globalization\"].
+                    text="""The user wants an IELTS Writing Task 2 prompt.
 
-I need to:
-1.  **Choose one topic:** I'll choose \"technology\".
-2.  **Decide on a question type:** An opinion/discussion type seems suitable for technology. Let's go with a \"discuss both views and give your own opinion\" structure.
-3.  **Formulate the question:** I need to present two contrasting views related to technology. A common debate is the impact of technology on social interaction or skills.
-    *   View 1: Technology enhances communication and connection.
-    *   View 2: Technology leads to social isolation and diminishes real-world interaction skills.
-4.  **Phrase it according to IELTS style:**
-    *   \"Some people believe that modern technology has improved social connections and made communication easier than ever before.\"
-    *   \"Others argue that it has led to increased social isolation and a decline in face-to-face interaction skills.\"
-    *   Combine these with the standard instruction: \"Discuss both these views and give your own opinion.\"
-5.  **Format the output:** Place the final prompt within the specified JSON structure.
+1.  **Check the input list:** Is the list of topics empty or not?
+2.  **If the list is NOT empty:**
+    *   Randomly select one topic from the provided list.
+    *   Generate an IELTS Task 2 question related to that topic, using one of the standard formats (Discuss both views, Agree/Disagree, Causes/Solutions, Advantages/Disadvantages).
+3.  **If the list IS empty:**
+    *   Choose a common IELTS topic (e.g., education, society, health, technology, environment, globalization, crime, work, family, travel, culture, media).
+    *   Generate an IELTS Task 2 question related to the chosen topic, using one of the standard formats.
+4.  **Format the output:** Present the generated question within a JSON structure with the key \"essay_prompt\".
 
-Let's try another topic: \"environment\".
-1.  **Choose topic:** Environment.
-2.  **Decide question type:** Problem/solution or To what extent agree/disagree. Let's try \"To what extent...\".
-3.  **Formulate the question:** Focus on individual vs. government responsibility for environmental problems.
-    *   Statement: Individuals can do little to improve the environment; only governments and large companies can make a real difference.
-4.  **Phrase it according to IELTS style:**
-    *   \"Some argue that individuals can have little impact on tackling environmental problems, and that only governments and large corporations can make a significant difference.\"
-    *   Combine with the standard instruction: \"To what extent do you agree or disagree?\"
-5.  **Format the output:** Place the final prompt within the specified JSON structure.
+**Scenario 1: Input list is [\"education\", \"technology\", \"environment\"]**
 
-This second option seems solid and addresses a common environmental debate. Let's go with the environment topic and the \"To what extent...\" format.
+*   Randomly select one: Let's say \"technology\".
+*   Choose a question format: Let's use \"Do the advantages outweigh the disadvantages?\".
+*   Generate question: \"Modern technology allows people to work and study from home. Do the advantages of this trend outweigh the disadvantages?\"
+*   Format output:
+    ```json
+    {
+      \"essay_prompt\": \"Modern technology allows people to work and study from home. Do the advantages of this trend outweigh the disadvantages?\"
+    }
+    ```
 
-Final check:
--   Topic chosen: Environment (from the list).
--   Question type: Opinion (Agree/Disagree).
--   Phrasing: Uses standard IELTS structure (\"Some argue that...\", \"To what extent do you agree or disagree?\").
--   Suitability: Appropriate complexity for Task 2.
--   Output format: Correct JSON structure."""
+**Scenario 2: Input list is []**
+
+*   Choose a common topic: Let's pick \"society\" or more specifically, \"community\".
+*   Choose a question format: Let's use \"To what extent do you agree or disagree?\".
+*   Generate question: \"Some people argue that individuals have become more independent and less reliant on their local communities. To what extent do you agree or disagree with this view?\"
+*   Format output:
+    ```json
+    {
+      \"essay_prompt\": \"Some people argue that individuals have become more independent and less reliant on their local communities. To what extent do you agree or disagree with this view?\"
+    }
+    ```
+
+**Scenario 3: Input list is [\"health\"]**
+
+*   Select the topic: \"health\".
+*   Choose a question format: Let's use \"Causes/Solutions\".
+*   Generate question: \"Levels of stress are increasing in modern society, leading to significant health problems. What are the main causes of this stress, and what measures could be taken to address it?\"
+*   Format output:
+    ```json
+    {
+      \"essay_prompt\": \"Levels of stress are increasing in modern society, leading to significant health problems. What are the main causes of this stress, and what measures could be taken to address it?\"
+    }
+    ```
+
+**Scenario 4: Input list is [\"globalization\", \"culture\"]**
+
+*   Randomly select one: Let's say \"globalization\".
+*   Choose a question format: Let's use \"Discuss both views and give your own opinion.\"
+*   Generate question: \"Some people believe that globalization leads to the loss of cultural identity, while others think it enriches local cultures. Discuss both views and give your own opinion.\"
+*   Format output:
+    ```json
+    {
+      \"essay_prompt\": \"Some people believe that globalization leads to the loss of cultural identity, while others think it enriches local cultures. Discuss both views and give your own opinion.\"
+    }
+    ```
+
+Let's implement the logic considering the input list provided by the user."""
                 ),
                 types.Part.from_text(
                     text="""```json
 {
-  \"essay_prompt\": \"Some argue that individuals can have little impact on tackling environmental problems, and that only governments and large corporations can make a significant difference. \\n\\nTo what extent do you agree or disagree?\"
+  \"essay_prompt\": \"Some people believe that unpaid community service should be a compulsory part of high school programmes (for example, working for a charity, improving the neighbourhood or teaching sports to younger children). To what extent do you agree or disagree?\"
 }
 ```"""
                 ),

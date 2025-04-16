@@ -1,0 +1,30 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+package com.phat.grpc.ai;
+
+option java_outer_classname = "proto";
+option java_multiple_files = true;
+
+service AIService {
+  rpc Scoring(ScoringRequest) returns (ScoringResponse);
+  rpc GenerateEssayPrompt(GenerateEssayPromptRequest) returns (GenerateEssayPromptResponse);
+}
+
+message ScoringRequest {
+  string essay_prompt = 1;
+  string essay_text = 2;
+}
+
+message ScoringResponse {
+  bool valid = 1;
+  string result = 2;
+}
+
+message GenerateEssayPromptRequest {
+  repeated string topics = 1;
+}
+
+message GenerateEssayPromptResponse {
+  bool valid = 1;
+  string result = 2;
+}

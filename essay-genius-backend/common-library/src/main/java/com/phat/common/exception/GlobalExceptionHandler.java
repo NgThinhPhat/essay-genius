@@ -51,6 +51,11 @@ public class GlobalExceptionHandler {
                         .build()
         );
     }
+    @ExceptionHandler(value = IllegalArgumentException.class)
+    ResponseEntity<?> handlingIllegalArgumentException(IllegalArgumentException exception) {
+        errorLogging(exception.getMessage(), exception);
+        return ResponseEntity.status(BAD_REQUEST).body(CommonResponse.builder().message(exception.getMessage()));
+    }
 
     @ExceptionHandler(value = AppException.class)
     ResponseEntity<?> handlingAppException(AppException exception) {

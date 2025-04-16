@@ -1,6 +1,6 @@
 package com.phat.app.service.impl;
 
-import com.phat.api.model.response.EssayScoringWrapper;
+import com.phat.api.model.response.EssayResponseWrapper;
 import com.phat.api.model.response.EssayTaskTwoScoreResponse;
 import com.phat.app.service.MockService;
 
@@ -32,17 +32,16 @@ public class MockServiceImpl implements MockService {
         List<EssaySubmission> submissions = new ArrayList<>();
 
         for (int i = 1; i <= 20; i++) {
-            EssaySubmission submission = new EssaySubmission();
-            submission.setPromptText("Describe an important event in your life " + i);
-            submission.setEssayText("This is the essay content number " + i);
-            submission.setBand(randomBand());
-            submission.setStar(random.nextInt(6)); // from 0 to 5
-
-            EssayScoringWrapper<EssayTaskTwoScoreResponse> scoreWrapper = new EssayScoringWrapper<>();
+            EssayResponseWrapper<EssayTaskTwoScoreResponse> scoreWrapper = new EssayResponseWrapper<>();
             scoreWrapper.setValid(true);
             scoreWrapper.setResult(generateRandomResult());
 
-            submission.setEssayTaskTwoScoreResponse(scoreWrapper);
+            EssaySubmission submission = EssaySubmission.builder()
+                    .promptText("Describe an important event in your life " + i)
+                    .essayText("This is the essay content number " + i)
+                    .band(randomBand())
+                    .essayTaskTwoScoreResponse(scoreWrapper)
+                    .build();
 
             submissions.add(submission);
         }
@@ -55,9 +54,16 @@ public class MockServiceImpl implements MockService {
         essaySubmissionRepository.deleteAll();
     }
 
-    private Double randomBand() {
-        float[] bands = {5.0f, 5.5f, 6.0f, 6.5f, 7.0f, 7.5f, 8.0f};
-        return (double) bands[random.nextInt(bands.length)];
+    private byte randomBand() {
+        double[] bands = {5.0, 6.0, 7.0, 8.0, 9.0};
+        double selectedBand = bands[random.nextInt(bands.length)];
+        return (byte) Math.floor(selectedBand); // Ví dụ: 7.5 => 7
+    }
+
+    private double randomBandScore() {
+        double[] bands = {5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0};
+        double selectedBand = bands[random.nextInt(bands.length)];
+        return Math.floor(selectedBand); // Ví dụ: 7.5 => 7
     }
 
     private EssayTaskTwoScoreResponse generateRandomResult() {
@@ -69,7 +75,7 @@ public class MockServiceImpl implements MockService {
 
         EssayTaskTwoScoreResponse response = EssayTaskTwoScoreResponse.builder()
                 .scores(scores)
-                .overallBand(randomBand())
+                .overallBand(randomBandScore())
                 .overallFeedback("Good job. Some areas need improvement.")
                 .corrections(List.of(
                         new EssayTaskTwoScoreResponse.Correction("misteak", "mistake", "Typo"),

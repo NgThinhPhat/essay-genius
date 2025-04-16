@@ -45,6 +45,8 @@ public enum AppErrorCode {
     //Rate Limiting Errors
     TOO_MANY_REQUESTS("auth/too-many-requests", "too_many_requests"),
     RATE_LIMIT_EXCEEDED("auth/rate-limit-exceeded", "rate_limit_exceeded"),
+    // gRPC Errors
+    CONNECTION_REFUSED("grpc/connection-refused", "connection_refused"),
     ;
 
     private final String code;

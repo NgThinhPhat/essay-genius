@@ -67,11 +67,19 @@ eureka:
 
 grpc:
   server:
-    port: 9082
+    port: 9083
     negotiationType: plaintext
     enableReflection: true
     maxInboundMessageSize: 104857600 # 100MB
     maxInboundMetadataSize: 1048576 # 1MB
+  client:
+    essay-service:
+      address: static://localhost:9082
+      negotiationType: plaintext
+
+    interaction-service:
+      address: static://localhost:9084
+      negotiationType: plaintext
 
 #logging:
 #  level:

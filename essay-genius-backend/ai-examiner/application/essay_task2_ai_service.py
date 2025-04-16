@@ -2,9 +2,10 @@ import os
 from concurrent import futures
 import grpc
 from application.proto_message import ScoringResponse
+from application.proto_message import GenerateEssayPromptResponse
 from google import genai
-from google.genai import types
-from protobuf import essay_service_pb2_grpc
+from google.genai import client, types
+from protobuf import ai_service_pb2_grpc
 from dotenv import load_dotenv
 import json
 import re
@@ -12,7 +13,7 @@ import re
 load_dotenv()
 
 
-class EssayServiceServicer(essay_service_pb2_grpc.EssayServiceServicer):
+class AIServiceServicer(ai_service_pb2_grpc.AIServiceServicer):
     def Scoring(self, request, context):
         essay_prompt = request.essay_prompt
         essay_text = request.essay_text
@@ -312,8 +313,20 @@ Now, assemble the JSON output."""
         cleaned_result = re.sub(
             r"^```json\s*|\s*```$", "", result.strip(), flags=re.DOTALL
         )
+        json_match = re.search(r"({.*})", cleaned_result, re.DOTALL)
+        if not json_match:
+            return GenerateEssayPromptResponse(
+                valid=False, result="No JSON object found."
+            )
+
+        json_text = json_match.group(1)
+        if not json_match:
+            return ScoringResponse(valid=False, result=cleaned_result)
+
+        json_text = json_match.group(1)
+
         try:
-            parsed_json = json.loads(cleaned_result)
+            parsed_json = json.loads(json_text)
             valid = parsed_json.get("valid", False)
             result2 = parsed_json.get("result", "Invalid input")
             if not isinstance(result2, str):
@@ -323,17 +336,223 @@ Now, assemble the JSON output."""
             print("❌ JSON parse error:", e)
             return ScoringResponse(valid=False, result=cleaned_result)
 
+    def GenerateEssayPrompt(self, request, context):
+        topics = request.topics
+        client = genai.Client(
+            api_key=os.environ.get("GEMINI_API_KEY"),
+        )
 
-def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    essay_service_pb2_grpc.add_EssayServiceServicer_to_server(
-        EssayServiceServicer(), server
-    )
-    server.add_insecure_port("[::]:9093")
-    server.start()
-    print("AI IELTS Scoring Service running on port 9093...")
-    server.wait_for_termination()
+        model = "gemini-2.0-flash"
+        contents = [
+            types.Content(
+                role="user",
+                parts=[
+                    types.Part.from_text(
+                        text="""You are an IELTS examiner assistant.
 
+Your task is to generate ONE IELTS Writing Task 2 prompt in correct academic format.
 
-if __name__ == "__main__":
-    serve()
+### Input:
+A list of topics (can be empty), for example:
+[\"education\", \"technology\", \"environment\"]
+or []
+
+### Rules:
+
+1. If the topic list is **not empty**, randomly select ONE topic from the list and generate an IELTS Writing Task 2 question relevant to that topic.
+
+2. If the topic list is **empty**, select a topic yourself from common IELTS categories (e.g. education, society, health, technology, environment, globalization, crime).
+
+3. Do NOT generate a question that is an exact or near duplicate of commonly seen IELTS prompts. The question must be original and varied in wording.
+
+4. Don't give prompt you already generated before if there are.
+
+5. The question must match one of the official IELTS Writing Task 2 styles, such as:
+   - \"Some people believe that... while others think that... Discuss both views and give your own opinion.\"
+   - \"To what extent do you agree or disagree?\"
+   - \"What are the causes of this problem and what solutions can be proposed?\"
+   - \"Do the advantages outweigh the disadvantages?\"
+
+6. If the generated question includes **gibberish**, **profanity**, or is **unrelated to IELTS writing**, mark it as invalid.
+
+---
+
+### Output format (valid):
+```json
+{
+  \"valid\": true,
+  \"result\": \"Your generated IELTS Writing Task 2 question here\"
+}
+Output format (invalid):
+
+{
+  \"valid\": false,
+  \"result\": \"Explain shortly why this input is invalid (e.g. 'Gibberish input', 'Unrelated topic', or 'Contains inappropriate content')\"
+}"""
+                    ),
+                ],
+            ),
+            types.Content(
+                role="model",
+                parts=[
+                    types.Part.from_text(
+                        text="""The user wants me to act as an IELTS examiner assistant and generate ONE IELTS Writing Task 2 prompt.
+
+Here's the plan:
+1.  **Check the input list:** Is it empty or does it contain topics?
+2.  **Select a topic:**
+    *   If the list is not empty, randomly pick one topic from it.
+    *   If the list is empty, pick a common IELTS topic (e.g., technology, education, environment, society, health, work, globalization).
+3.  **Generate a question:**
+    *   Craft an original IELTS Writing Task 2 question based on the selected topic.
+    *   Ensure it adheres to one of the standard IELTS question formats (Discuss both views, Agree/Disagree, Causes/Solutions, Advantages/Disadvantages).
+    *   Make sure the wording is academic and unique, avoiding common clichés or exact replicas of known prompts.
+    *   Keep track of previously generated prompts (although for a single generation, this is less critical, it's good practice).
+4.  **Validate the question:**
+    *   Check for gibberish, profanity, or irrelevance to IELTS.
+    *   If valid, format the output as specified (valid: true).
+    *   If invalid (which shouldn't happen if I follow the steps correctly, but I need to consider the possibility), format the output as specified (valid: false).
+
+**Scenario 1: Input list is NOT empty**
+Input: `[\"education\", \"technology\", \"environment\"]`
+1.  Input list is not empty.
+2.  Randomly select one topic, e.g., \"technology\".
+3.  Generate a question about technology. Let's try an Agree/Disagree format. How about the impact of automation on creative professions?
+    *   *Initial idea:* \"Automation is replacing human jobs. To what extent do you agree or disagree?\" (Too generic)
+    *   *Refined idea:* Focus on a specific area. \"Many argue that the increasing sophistication of artificial intelligence poses a significant threat to professions traditionally considered creative, such as writing, music composition, and visual arts. To what extent do you agree or disagree with this view?\"
+4.  Validate: Seems valid, academic, fits the format, and isn't a direct copy of common prompts.
+5.  Format output.
+
+**Scenario 2: Input list IS empty**
+Input: `[]`
+1.  Input list is empty.
+2.  Select a common IELTS topic, e.g., \"society\" or \"work\". Let's choose \"work\".
+3.  Generate a question about work. Let's try a \"Discuss both views\" format. How about the trend of remote work vs traditional office work post-pandemic?
+    *   *Initial idea:* \"Some people like remote work, others like office work. Discuss.\" (Too simple)
+    *   *Refined idea:* \"Following recent global events, many companies have continued to offer remote working arrangements, while others insist on returning to traditional office environments. Some argue that remote work enhances productivity and employee well-being, whereas others believe it undermines company culture and collaboration. Discuss both these perspectives and give your own opinion.\"
+4.  Validate: Seems valid, academic, fits the format, original wording.
+5.  Format output.
+
+**Scenario 3: Invalid Input (hypothetical, though not specified in the prompt)**
+Input: `[\"asdfghjkl\", \"!!!\"]`
+1.  Input list contains gibberish. The prompt doesn't explicitly say how to handle *invalid input topics*, only *invalid generated output*. I should probably still try to pick one if possible or default to selecting my own topic if the input topics are unusable. Let's assume I pick \"asdfghjkl\".
+2.  Trying to generate a question on \"asdfghjkl\" would likely result in gibberish or an unrelated question.
+3.  If the *generated* question is gibberish (e.g., \"Discuss the impact of asdfghjkl on qwerty?\"), then mark as invalid.
+4.  Output: `{ \"valid\": false, \"result\": \"Generated question based on gibberish input topic.\" }`
+    *   *Correction:* The rules state to mark as invalid if the *generated question* includes gibberish. It doesn't explicitly forbid *using* a potentially nonsensical topic from the input list if provided. However, a good assistant should probably recognize unusable input topics. The prompt asks me to generate a question *relevant* to the topic. A gibberish topic makes relevance impossible. So, if the selected topic is gibberish, I should probably treat it as an invalid generation scenario. Or, perhaps better, I should recognize the input topic is invalid and skip it, or treat the list as effectively empty if all topics are invalid. Given the instructions, the most robust approach is: If a topic is selected (even if odd), try to make a sensible question. If the *resulting question* is nonsensical or invalid, mark it `false`. If the input list *only* contains unusable topics, maybe treat it as empty.
+    *   Let's refine: If the *selected* topic from the list is clearly unusable (like gibberish), I cannot generate a *relevant* question. Therefore, the resulting generation attempt would fail the criteria. I should probably then fall back to picking a common topic myself, as if the list provided was effectively unusable/empty for the purpose of generating a *relevant* question.
+    *   Let's stick to the prompt rules precisely: Generate based on the selected topic. If the resulting *question* is gibberish, mark invalid.
+
+**Constraint Checklist & Confidence Score:**
+1. Generate ONE prompt: Yes.
+2. Handle empty list: Yes.
+3. Handle non-empty list (random selection): Yes.
+4. Avoid common duplicates: Yes (will strive for originality).
+5. Avoid prior generations: Yes (will generate fresh each time).
+6. Match IELTS style: Yes (will use one of the 4 main types).
+7. Validate output (gibberish, profanity, relevance): Yes.
+8. Output format (JSON valid): Yes.
+9. Output format (JSON invalid): Yes.
+
+Confidence Score: 5/5
+
+Okay, let's proceed with an example generation. I'll assume the input is `[\"environment\", \"globalization\"]`.
+
+1.  **Input:** `[\"environment\", \"globalization\"]` (Not empty)
+2.  **Select Topic:** Randomly choose \"environment\".
+3.  **Generate Question:**
+    *   Topic: Environment
+    *   Style: Advantages/Disadvantages
+    *   Idea: Focus on a specific environmental action, like ecotourism.
+    *   Draft: \"Ecotourism is increasingly promoted as a sustainable way to travel and support conservation efforts. However, some argue that it can still negatively impact local ecosystems and communities. Do the advantages of ecotourism outweigh the disadvantages?\"
+4.  **Validate:** Valid. Relevant to environment, uses standard format, academic tone, avoids common phrasing.
+5.  **Format Output:** JSON as required.
+
+Let's try another one with an empty list.
+
+1.  **Input:** `[]` (Empty)
+2.  **Select Topic:** Choose a common IELTS topic, e.g., \"Health\".
+3.  **Generate Question:**
+    *   Topic: Health
+    *   Style: Causes/Solutions
+    *   Idea: Focus on mental health in urban environments.
+    *   Draft: \"Rates of stress and mental health problems appear to be higher among people living in large cities compared to those in rural areas. What are the likely causes of this trend, and what measures could city planners and governments take to address it?\"
+4.  **Validate:** Valid. Relevant to health/society, uses standard format, academic tone, specific focus.
+5.  **Format Output:** JSON as required.
+
+One more, with a different topic from a list.
+
+1.  **Input:** `[\"work\", \"leisure\", \"media\"]`
+2.  **Select Topic:** Randomly choose \"media\".
+3.  **Generate Question:**
+    *   Topic: Media
+    *   Style: Discuss both views + opinion
+    *   Idea: Impact of social media influencers on consumer behaviour.
+    *   Draft: \"Some people believe that social media influencers provide valuable product information and recommendations to consumers. Others contend that their primary role is advertising, often misleadingly presented as genuine advice, which negatively affects purchasing decisions. Discuss both these views and give your own opinion.\"
+4.  **Validate:** Valid. Relevant to media/society, uses standard format, academic tone, specific and contemporary issue.
+5.  **Format Output:** JSON as required.
+
+The process seems robust. I will now generate the final response based on the user's request, assuming a specific input (which isn't provided, so I'll simulate one scenario, perhaps the empty list scenario as it's common)."""
+                    ),
+                    types.Part.from_text(
+                        text="""```json
+{
+  \"valid\": true,
+  \"result\": \"Many governments are investing heavily in developing public transportation systems, aiming to reduce traffic congestion and pollution. However, others argue that resources would be better spent on improving infrastructure for private vehicles, such as roads and parking. Discuss both these approaches and state your own opinion on where the focus should primarily lie.\"
+}
+```"""
+                    ),
+                ],
+            ),
+            types.Content(
+                role="user",
+                parts=[
+                    types.Part.from_text(
+                        text="""List of topics: """ + str(topics) + """\n"""
+                    ),
+                ],
+            ),
+        ]
+        generate_content_config = types.GenerateContentConfig(
+            response_mime_type="text/plain",
+        )
+
+        chunks = client.models.generate_content_stream(
+            model=model,
+            contents=contents,
+            config=generate_content_config,
+        )
+        result = "".join(
+            str(chunk.text) for chunk in chunks if hasattr(chunk, "text") and chunk.text
+        )
+
+        cleaned_result = re.sub(
+            r"^```json\s*|\s*```$", "", result.strip(), flags=re.DOTALL
+        )
+
+        json_match = re.search(r"({.*})", cleaned_result, re.DOTALL)
+
+        if not json_match:
+            return GenerateEssayPromptResponse(
+                valid=False, result="No JSON object found."
+            )
+
+        json_text = json_match.group(1)
+
+        try:
+            parsed_json = json.loads(json_text)
+            valid = parsed_json.get("valid", False)
+            result2 = parsed_json.get("result", "Invalid input")
+
+            # Đảm bảo result là string
+            if not isinstance(result2, str):
+                result2 = json.dumps(result2, ensure_ascii=False)
+
+            return GenerateEssayPromptResponse(valid=valid, result=result2)
+
+        except json.JSONDecodeError as e:
+            print("❌ JSON parse error:", e)
+            return GenerateEssayPromptResponse(
+                valid=False,
+                result=cleaned_result,
+            )

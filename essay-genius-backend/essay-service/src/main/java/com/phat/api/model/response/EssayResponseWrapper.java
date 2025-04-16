@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EssayScoringWrapper<T> {
+public class EssayResponseWrapper<T> {
     private boolean valid;
     private T result;
 }

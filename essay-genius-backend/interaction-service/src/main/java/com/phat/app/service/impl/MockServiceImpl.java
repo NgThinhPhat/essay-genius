@@ -8,6 +8,7 @@ import com.phat.domain.model.Comment;
 import com.phat.domain.model.Reaction;
 import com.phat.domain.model.ReactionType;
 import com.phat.domain.model.TargetType;
+import com.phat.grpc.essay.EssayServiceGrpc;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -16,8 +17,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
-import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +25,7 @@ public class MockServiceImpl implements MockService {
 
     CommentRepository commentRepository;
     ReactionRepository reactionRepository;
+    EssayGrpcClient essayGrpcClient;
 
     static Random random = new Random();
 
@@ -38,9 +38,7 @@ public class MockServiceImpl implements MockService {
     @Override
     public void mock() {
         int essayCount = 20 + random.nextInt(11);
-        List<String> essayIds = IntStream.range(0, essayCount)
-                .mapToObj(i -> UUID.randomUUID().toString())
-                .toList();
+        List<String> essayIds = essayGrpcClient.getEssayIds();
 
         List<Comment> allComments = new ArrayList<>();
         List<Reaction> allReactions = new ArrayList<>();
@@ -58,9 +56,8 @@ public class MockServiceImpl implements MockService {
                 parent = commentRepository.save(parent);
                 allComments.add(parent);
 
-                int replyCount = 1 + random.nextInt(3);
+                int replyCount = 1 + random.nextInt(10);
                 parent.setReplyCount(replyCount);
-
                 for (int j = 0; j < replyCount; j++) {
                     Comment reply = Comment.builder()
                             .essayId(essayId)
@@ -73,12 +70,21 @@ public class MockServiceImpl implements MockService {
                 commentRepository.save(parent);
             }
 
-            int essayReactionCount = 1 + random.nextInt(3);
+            int essayReactionCount = 1 + random.nextInt(10);
             for (int r = 0; r < essayReactionCount; r++) {
                 Reaction reaction = Reaction.builder()
                         .targetId(essayId)
                         .targetType(TargetType.COMMENT)
                         .reactionType(randomReactionType())
+                        .build();
+                allReactions.add(reaction);
+            }
+            int startReactionCount = 1 + random.nextInt(10);
+            for (int r = 0; r < startReactionCount; r++) {
+                Reaction reaction = Reaction.builder()
+                        .targetId(essayId)
+                        .targetType(TargetType.ESSAY)
+                        .reactionType(ReactionType.STAR)
                         .build();
                 allReactions.add(reaction);
             }
