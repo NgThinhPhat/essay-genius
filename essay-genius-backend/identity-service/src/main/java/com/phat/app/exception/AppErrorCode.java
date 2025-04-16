@@ -44,6 +44,8 @@ public enum AppErrorCode {
     //Rate Limiting Errors
     TOO_MANY_REQUESTS("auth/too-many-requests", "too_many_requests"),
     RATE_LIMIT_EXCEEDED("auth/rate-limit-exceeded", "rate_limit_exceeded"),
+
+    SEND_MAIL_ERROR("mail/send-mail-error", "send_mail_error"),
     ;
 
     private final String code;

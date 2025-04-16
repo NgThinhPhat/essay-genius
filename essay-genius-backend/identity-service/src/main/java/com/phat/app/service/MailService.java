@@ -11,4 +11,6 @@ public interface MailService {
 
     void sendMailToResetPassword(String to, String code) throws MessagingException, UnsupportedEncodingException, MessagingException;
 
+    void sendMailToVerifyWithBoth(String to, String token, String code) throws MessagingException, UnsupportedEncodingException, MessagingException;
+
 }

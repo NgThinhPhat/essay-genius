@@ -1,5 +1,6 @@
 package com.phat.app.service.impl;
 
+import com.phat.api.model.request.SendMailDto;
 import com.phat.app.exception.AppException;
 import com.phat.app.service.AuthService;
 import com.phat.app.service.BaseRedisService;
@@ -22,6 +23,10 @@ import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtException;
@@ -29,6 +34,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Service;
 
 import org.springframework.security.core.AuthenticationException;
+
 import javax.crypto.spec.SecretKeySpec;
 import java.security.SecureRandom;
 import java.text.ParseException;
@@ -57,6 +63,8 @@ public class AuthServiceImpl implements AuthService {
     BaseRedisService<String, String, Object> baseRedisService;
 
     VerificationRepository verificationRepository;
+
+    KafkaTemplate<String, String> sendMailKafkaTemplate;
 
     @NonFinal
     @Value("${jwt.accessSignerKey}")
@@ -135,12 +143,20 @@ public class AuthServiceImpl implements AuthService {
                 .user(user)
                 .build());
 
-//        sendMailKafkaTemplate.send(KAFKA_TOPIC_SEND_MAIL,
-//                verificationType + ":"
-//                        + email + ":"
-//                        + verification.getToken() + ":"
-//                        + verification.getCode() + ":"
-//                        + LocaleContextHolder.getLocale().getLanguage());
+        sendMailKafkaTemplate.send(KAFKA_TOPIC_SEND_MAIL,
+                verificationType + ":"
+                        + email + ":"
+                        + verification.getToken() + ":"
+                        + verification.getCode() + ":"
+                        + LocaleContextHolder.getLocale().getLanguage());
+//        SendMailDto sendMailDto = SendMailDto.builder()
+//                .verificationType(verificationType.toString())
+//                .email(email)
+//                .token(verification.getToken())
+//                .code(verification.getCode())
+//                .languageCode(LocaleContextHolder.getLocale().getLanguage())
+//                .build();
+//        sendMailKafkaTemplate.send(KAFKA_TOPIC_SEND_MAIL, sendMailDto);
     }
 
     public static String generateVerificationCode(int length) {
@@ -154,6 +170,7 @@ public class AuthServiceImpl implements AuthService {
 
         return code.toString();
     }
+
     @Override
     @Transactional
     public void verifyEmail(User user, String code, String token) {
@@ -174,7 +191,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public User signIn(String email, String password) {
-         User user = userService.findByEmail(email);
+        User user = userService.findByEmail(email);
 
         if (isPasswordExpired(user))
             throw new AppException(EXPIRED_PASSWORD, CONFLICT, "Expired password");
@@ -385,6 +402,7 @@ public class AuthServiceImpl implements AuthService {
 
         return signedJWT;
     }
+
     private boolean isPasswordExpired(User user) {
         return false;
     }

@@ -77,7 +77,7 @@ public class AuthController implements IAuthController {
     public ResponseEntity<SendEmailVerificationResponse> sendEmailVerification(SendEmailVerificationRequest sendEmailVerificationRequest) {
         authService.sendEmailVerification(sendEmailVerificationRequest.email(), sendEmailVerificationRequest.type());
 
-        return ResponseEntity.status(OK).body(
+        return ResponseEntity.status(HttpStatus.OK).body(
                 new SendEmailVerificationResponse(getLocalizedMessage("resend_verification_email_success")));
     }
 

@@ -68,6 +68,15 @@ public class MailServiceImpl implements MailService {
                 "footer_reset_password", code);
     }
 
+    @Override
+    public void sendMailToVerifyWithBoth(String to, String token, String code) throws jakarta.mail.MessagingException, UnsupportedEncodingException, jakarta.mail.MessagingException {
+        sendMail(to,
+                "subject_verify_email",
+                "content_verify_email_with_both",
+                "sub_content_verify_email",
+                "footer_verify_email", String.format("%s?token=%s&code=%s", verifyLink, token, code));
+    }
+
     private void sendMail(String toMail, String subjectKey,
                           String contentKey,
                           String subContentKey,

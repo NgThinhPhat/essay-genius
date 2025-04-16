@@ -33,13 +33,13 @@ spring:
     default-locale: en
 
   kafka:
-    bootstrap-servers: localhost:9092
-    consumer:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9094}
+    identity-consumer:
       group-id: identity-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    producer:
+    identity-producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
@@ -47,7 +47,7 @@ spring:
     from: ${FROM_MAIL}
     host: smtp.gmail.com
     port: 587
-    verify-link: ${VERIFY_LINK:http://localhost:8082/identity/auth/verify-email-by-token}
+    verify-link: ${VERIFY_LINK:http://localhost:9000/identity/auth/verify-email-by-token}
     username: ${FROM_MAIL}
     password: ${SMTP_PASSWORD}
     default-encoding: UTF-8
