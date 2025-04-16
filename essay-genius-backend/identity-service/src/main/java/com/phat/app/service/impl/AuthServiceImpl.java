@@ -85,7 +85,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public boolean introspect(String token) throws JOSEException, ParseException {
         boolean isValid = true;
-
         try {
             verifyToken(token, false);
 
@@ -117,7 +116,7 @@ public class AuthServiceImpl implements AuthService {
 
         List<Verification> verifications = verificationRepository.findByUserAndVerificationType(user, verificationType);
 
-        if (verificationType.equals(VERIFY_EMAIL_BY_CODE) || verificationType.equals(VERIFY_EMAIL_BY_TOKEN)) {
+        if (verificationType.equals(VERIFY_EMAIL_BY_CODE) || verificationType.equals(VERIFY_EMAIL_BY_TOKEN) || verificationType.equals(VERIFY_EMAIL_WITH_BOTH)) {
             if (user.isEnabled())
                 throw new AppException(USER_ALREADY_VERIFIED, BAD_REQUEST, "User already verified");
 
@@ -258,12 +257,11 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String refresh(String refreshToken, HttpServletRequest servletRequest) throws ParseException, JOSEException {
         SignedJWT signedJWT = verifyToken(refreshToken, true);
-        String email = signedJWT.getJWTClaimsSet().getSubject();
+        String id = signedJWT.getJWTClaimsSet().getSubject();
 
         User user;
         try {
-            user = userService.findByEmail(email);
-
+            user = userService.findById(id);
         } catch (AuthenticationException e) {
             throw new AppException(INVALID_TOKEN, BAD_REQUEST, "Invalid token");
         }
@@ -276,7 +274,7 @@ public class AuthServiceImpl implements AuthService {
         String jwtID = signedAccessTokenJWT.getJWTClaimsSet().getJWTID();
         Date expiryTime = signedAccessTokenJWT.getJWTClaimsSet().getExpirationTime();
 
-        if (!signedAccessTokenJWT.getJWTClaimsSet().getSubject().equals(email))
+        if (!signedAccessTokenJWT.getJWTClaimsSet().getSubject().equals(id))
             throw new AppException(INVALID_TOKEN, BAD_REQUEST, "Invalid token");
 
         if (expiryTime.after(new Date())) {

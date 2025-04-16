@@ -52,6 +52,8 @@ public class SendEmailConsumer {
                 case VERIFY_EMAIL_BY_TOKEN -> mailService.sendMailToVerifyWithToken(email, token);
 
                 case RESET_PASSWORD -> mailService.sendMailToResetPassword(email, code);
+
+                case VERIFY_EMAIL_WITH_BOTH -> mailService.sendMailToVerifyWithBoth(email, token, code);
             }
         }
         catch (MessagingException | UnsupportedEncodingException e) {

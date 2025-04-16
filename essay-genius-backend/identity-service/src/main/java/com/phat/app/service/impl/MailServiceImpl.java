@@ -73,7 +73,7 @@ public class MailServiceImpl implements MailService {
         sendMail(to,
                 "subject_verify_email",
                 "content_verify_email_with_both",
-                "sub_content_verify_email",
+                "sub_content_verify_email_with_both",
                 "footer_verify_email", String.format("%s?token=%s&code=%s", verifyLink, token, code));
     }
 
@@ -92,6 +92,17 @@ public class MailServiceImpl implements MailService {
 
         Map<String, Object> properties = new HashMap<>();
         properties.put("secret", secret);
+        if (contentKey.equals("content_verify_email_with_both")) {
+            int codeIndex = secret.indexOf("&code=");
+            contents[1] = getLocalizedMessage(subContentKey, secret);
+            String code = "";
+            if (codeIndex != -1) {
+                code = secret.substring(codeIndex + 6); // 6 là độ dài của "&code="
+            }
+            properties.put("secret2", code);
+            String tokenLink = (codeIndex != -1) ? secret.substring(0, codeIndex) : secret;
+            properties.put("secret", tokenLink);
+        }
         properties.put("contents", contents);
         properties.put("subject", subject);
         properties.put("footer", getLocalizedMessage(footerKey));

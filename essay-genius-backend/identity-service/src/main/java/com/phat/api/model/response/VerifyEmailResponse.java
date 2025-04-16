@@ -1,4 +1,6 @@
 package com.phat.api.model.response;
 
-public class VerifyEmailResponse {
+public record VerifyEmailResponse (
+        String message
+){
 }

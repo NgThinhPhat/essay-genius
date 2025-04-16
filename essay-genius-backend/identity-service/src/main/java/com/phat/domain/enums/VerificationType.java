@@ -8,6 +8,6 @@ public enum VerificationType {
 
     RESET_PASSWORD,
 
-    VERIFY_EMAIL_BY_BOTH,
+    VERIFY_EMAIL_WITH_BOTH,
 
 }

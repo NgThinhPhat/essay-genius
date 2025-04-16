@@ -10,11 +10,14 @@ import com.phat.app.service.UserService;
 import com.phat.domain.model.User;
 import com.nimbusds.jose.JOSEException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.ParseException;
@@ -82,27 +85,35 @@ public class AuthController implements IAuthController {
     }
 
     @Override
-    public ResponseEntity<VerifyEmailResponse> verifyEmailByCode(VerifyEmailRequest verifyEmailRequest) {
-        return null;
+    public ResponseEntity<VerifyEmailResponse> verifyEmailByCode(@Valid @RequestBody VerifyEmailRequest verifyEmailRequest) {
+        User user = userService.findByEmail(verifyEmailRequest.email());
+
+        authService.verifyEmail(user, verifyEmailRequest.code(), null);
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new VerifyEmailResponse(getLocalizedMessage("verify_email_success")));
     }
 
     @Override
-    public ResponseEntity<VerifyEmailResponse> verifyEmailByToken(String token) {
-        return null;
+    public ResponseEntity<VerifyEmailResponse> verifyEmailByToken(@RequestParam(name = "token") String token) {
+        authService.verifyEmail(null, null, token);
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new VerifyEmailResponse(getLocalizedMessage("verify_email_success")));
     }
 
     @Override
-    public ResponseEntity<SendEmailFogotPasswordResponse> sendForgotPassword(SendForgotPasswordRequest sendForgotPasswordRequest) {
+    public ResponseEntity<SendEmailFogotPasswordResponse> sendForgotPassword(@RequestBody @Valid SendForgotPasswordRequest sendForgotPasswordRequest) {
         authService.sendEmailForgotPassword(sendForgotPasswordRequest.email());
 
-        return ResponseEntity.status(OK).body(new SendEmailFogotPasswordResponse(
+        return ResponseEntity.status(HttpStatus.OK).body(new SendEmailFogotPasswordResponse(
                 getLocalizedMessage("send_forgot_password_email_success"),
                 Date.from(Instant.now().plus(1, ChronoUnit.MINUTES))
         ));
     }
 
     @Override
-    public ResponseEntity<RefreshTokenResponse> refreshToken(RefreshTokenRequest refreshTokenRequest, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<RefreshTokenResponse> refreshToken(@RequestBody @Valid RefreshTokenRequest refreshTokenRequest, HttpServletRequest httpServletRequest) {
 
         String newAccessToken;
         try {
@@ -112,7 +123,7 @@ public class AuthController implements IAuthController {
             throw new AppException(INVALID_SIGNATURE, UNPROCESSABLE_ENTITY, "Invalid signature");
         }
 
-        return ResponseEntity.status(OK).body(new RefreshTokenResponse(
+        return ResponseEntity.status(HttpStatus.OK).body(new RefreshTokenResponse(
                 getLocalizedMessage("refresh_token_success"),
                 newAccessToken
         ));
@@ -120,29 +131,28 @@ public class AuthController implements IAuthController {
     }
 
     @Override
-    public ResponseEntity<ForgotPasswordResponse> forgotPassword(ForgotPasswordRequest forgotPasswordRequest) {
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(@RequestBody @Valid ForgotPasswordRequest forgotPasswordRequest) {
         User user = userService.findByEmail(forgotPasswordRequest.email());
         String forgotPasswordToken = authService.forgotPassword(user, forgotPasswordRequest.code());
 
-        return ResponseEntity.status(OK).body(new ForgotPasswordResponse(
+        return ResponseEntity.status(HttpStatus.OK).body(new ForgotPasswordResponse(
                 getLocalizedMessage("verify_forgot_password_code_success"),
                 forgotPasswordToken
         ));
     }
 
     @Override
-    public ResponseEntity<ResetPasswordResponse> resetPassword(ResetPasswordRequest resetPasswordRequest) {
+    public ResponseEntity<ResetPasswordResponse> resetPassword(@RequestBody @Valid ResetPasswordRequest resetPasswordRequest) {
         authService.resetPassword(resetPasswordRequest.token(), resetPasswordRequest.password(), resetPasswordRequest.passwordConfirmation());
 
-        return ResponseEntity.status(OK).body(
+        return ResponseEntity.status(HttpStatus.OK).body(
                 new ResetPasswordResponse(getLocalizedMessage("reset_password_success")));
-
     }
 
     @Override
-    public ResponseEntity<IntrospectResponse> introspect(IntrospectRequest introspectRequest) throws ParseException, JOSEException {
+    public ResponseEntity<IntrospectResponse> introspect(@RequestBody @Valid IntrospectRequest introspectRequest) throws ParseException, JOSEException {
         boolean isValid = authService.introspect(introspectRequest.token());
 
-        return ResponseEntity.status(OK).body(new IntrospectResponse(isValid));
+        return ResponseEntity.status(HttpStatus.OK).body(new IntrospectResponse(isValid));
     }
 }

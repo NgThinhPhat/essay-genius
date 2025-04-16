@@ -48,6 +48,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void activateUser(User user) {
+        user.setEnabled(true);
         userRepository.save(user);
     }
 }
