@@ -5,6 +5,7 @@ import com.phat.common.exception.AppErrorCode;
 import com.phat.common.exception.AppException;
 import com.phat.grpc.essay.EssayServiceGrpc;
 import com.phat.grpc.essay.GetEssayIdsResponse;
+import com.phat.grpc.essay.IsEssayIdExistRequest;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,15 @@ public class EssayGrpcClient {
             GetEssayIdsResponse response = stub.getEssayIds(Empty.getDefaultInstance());
 
             return response.getEssayIdsList();
+        } catch (Exception e) {
+            log.error("gRPC Error: " + e.getMessage());
+            throw new AppException(AppErrorCode.CONNECTION_REFUSED, HttpStatus.BAD_REQUEST,"gRPC request failed", e);
+        }
+    }
+
+    public boolean isEssayIdExist(String essayId) {
+        try {
+            return stub.isEssayIdExist(IsEssayIdExistRequest.newBuilder().setEssayId(essayId).build()).getIsExist();
         } catch (Exception e) {
             log.error("gRPC Error: " + e.getMessage());
             throw new AppException(AppErrorCode.CONNECTION_REFUSED, HttpStatus.BAD_REQUEST,"gRPC request failed", e);

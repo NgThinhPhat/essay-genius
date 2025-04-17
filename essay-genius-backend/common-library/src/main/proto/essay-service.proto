@@ -7,8 +7,16 @@ option java_multiple_files = true;
 
 service EssayService {
   rpc GetEssayIds (google.protobuf.Empty) returns (GetEssayIdsResponse);
+  rpc IsEssayIdExist (IsEssayIdExistRequest) returns (IsEssayIdExistResponse);
 }
 
 message GetEssayIdsResponse {
   repeated string essay_ids = 1;
+}
+
+message IsEssayIdExistRequest {
+  string essay_id = 1;
+}
+message IsEssayIdExistResponse {
+  bool is_exist = 1;
 }

@@ -34,12 +34,12 @@ public class MockServiceImpl implements MockService {
         for (int i = 1; i <= 20; i++) {
             EssayResponseWrapper<EssayTaskTwoScoreResponse> scoreWrapper = new EssayResponseWrapper<>();
             scoreWrapper.setValid(true);
-            scoreWrapper.setResult(generateRandomResult());
-
+            EssayTaskTwoScoreResponse randomScores = generateRandomResult();
+            scoreWrapper.setResult(randomScores);
             EssaySubmission submission = EssaySubmission.builder()
                     .promptText("Describe an important event in your life " + i)
                     .essayText("This is the essay content number " + i)
-                    .band(randomBand())
+                    .band((byte)Math.floor(randomScores.getOverallBand()))
                     .essayTaskTwoScoreResponse(scoreWrapper)
                     .build();
 
@@ -54,16 +54,9 @@ public class MockServiceImpl implements MockService {
         essaySubmissionRepository.deleteAll();
     }
 
-    private byte randomBand() {
-        double[] bands = {5.0, 6.0, 7.0, 8.0, 9.0};
-        double selectedBand = bands[random.nextInt(bands.length)];
-        return (byte) Math.floor(selectedBand); // Ví dụ: 7.5 => 7
-    }
-
     private double randomBandScore() {
         double[] bands = {5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0};
-        double selectedBand = bands[random.nextInt(bands.length)];
-        return Math.floor(selectedBand); // Ví dụ: 7.5 => 7
+        return bands[random.nextInt(bands.length)];
     }
 
     private EssayTaskTwoScoreResponse generateRandomResult() {

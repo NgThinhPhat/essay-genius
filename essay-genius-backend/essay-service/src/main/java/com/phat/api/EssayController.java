@@ -1,7 +1,9 @@
 package com.phat.api;
 
+import org.springframework.web.bind.annotation.ModelAttribute;
 import com.phat.api.model.request.EssaySaveRequest;
 import com.phat.api.model.request.EssayTaskTwoScoringRequest;
+import com.phat.api.model.request.ListEssayRequest;
 import com.phat.api.model.response.CommonResponse;
 import com.phat.api.model.response.EssayResponseWrapper;
 import com.phat.api.model.response.EssaySaveResponse;
@@ -84,13 +86,10 @@ public class EssayController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Page<EssaySaveResponse>> getAllEssays(@RequestParam(defaultValue = "0") int page,
-                                               @RequestParam(defaultValue = "10") int size,
-                                               @RequestParam(defaultValue = "createdAt") String sortBy,
-                                               @RequestParam(defaultValue = "desc") String sortDirection
+    public ResponseEntity<Page<EssaySaveResponse>> getAllEssays(@ModelAttribute ListEssayRequest listEssayRequest
                                                               ) throws Exception {
         return ResponseEntity.ok(
-                essaySubmissionService.findAllEssays(page, size, sortBy, sortDirection));
+                essaySubmissionService.findAllEssays(listEssayRequest));
     }
 
 }

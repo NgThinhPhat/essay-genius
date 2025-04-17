@@ -1,5 +1,7 @@
 package com.phat.app.service.impl;
 
+import com.phat.api.model.request.ListCommentRequest;
+import com.phat.api.model.request.ListReactionRequest;
 import com.phat.app.service.InteractionService;
 import com.phat.domain.irepository.CommentRepository;
 import com.phat.domain.irepository.ReactionRepository;
@@ -14,6 +16,12 @@ import com.phat.domain.model.TargetType;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,9 +33,20 @@ public class InteractionServiceImpl implements InteractionService {
 
     CommentRepository commentRepository;
     ReactionRepository reactionRepository;
-
+    MongoTemplate mongoTemplate;
+    EssayGrpcClient essayGrpcClient;
     @Override
+    @Transactional
     public Comment addComment(String essayId, String content, String parentCommentId) {
+        if (!essayGrpcClient.isEssayIdExist(essayId)) {
+            throw new IllegalArgumentException("Essay ID does not exist");
+        }
+        if (parentCommentId != null) {
+            Comment parentComment = commentRepository.findById(parentCommentId)
+                    .orElseThrow(() -> new IllegalArgumentException("Parent comment not found"));
+            parentComment.setReplyCount(parentComment.getReplyCount() + 1);
+            commentRepository.save(parentComment);
+        }
         Comment comment = Comment.builder()
                 .essayId(essayId)
                 .content(content)
@@ -39,28 +58,60 @@ public class InteractionServiceImpl implements InteractionService {
     }
 
     @Override
-    public List<Comment> getComments(String essayId) {
-        return commentRepository.findByEssayIdAndParentIdIsNull(essayId);
-    }
-
-    @Override
-    public List<Reaction> getReactions(String targetId, String targetType) {
-        return List.of();
-    }
-
-    @Override
     public Reaction addReaction(String targetId, String targetType, String type) {
+        if(targetType.equals(TargetType.valueOf("COMMENT").name())) {
+            Comment comment = commentRepository.findById(targetId)
+                    .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+            comment.setReactionCount(comment.getReactionCount() + 1);
+            commentRepository.save(comment);
+        } else if (targetType.equals(TargetType.valueOf("ESSAY").name())) {
+            if (!essayGrpcClient.isEssayIdExist(targetId)){
+                throw new IllegalArgumentException("Essay ID does not exist");
+            }
+        }
         Reaction reaction = Reaction.builder()
                 .targetId(targetId)
                 .reactionType(ReactionType.valueOf(type.toUpperCase()))
+                .targetType(TargetType.valueOf(targetType.toUpperCase()))
                 .build();
 
         return reactionRepository.save(reaction);
     }
 
-    @Override
-    public List<Reaction> getReactions(String targetId, TargetType targetType) {
-        return reactionRepository.findByTargetIdAndTargetType(targetId, targetType);
+    public Page<Comment> findAllComments(ListCommentRequest request) {
+        Query query = new Query(request.toCriteria()).with(request.toPageable());
+
+        long total = mongoTemplate.count(new Query(request.toCriteria()), Comment.class);
+
+        List<Comment> comments = mongoTemplate.find(query, Comment.class);
+
+        Pageable pageable = request.toPageable();
+        return new PageImpl<>(comments, pageable, total);
     }
 
+    public Page<Reaction> findAllReactions(ListReactionRequest request) {
+        // Build query từ criteria
+        Query query = new Query(request.toCriteria()).with(request.toPageable());
+
+        long total = mongoTemplate.count(new Query(request.toCriteria()), Reaction.class);
+
+        List<Reaction> reactions = mongoTemplate.find(query, Reaction.class);
+
+        Pageable pageable = request.toPageable();
+        return new PageImpl<>(reactions, pageable, total);
+    }
+
+    @Override
+    public void deleteComment(String commentId) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+        comment.softDelete();
+        commentRepository.save(comment);
+    }
+
+    @Override
+    public void deleteReaction(String reactionId) {
+        Reaction reaction = reactionRepository.findById(reactionId)
+                .orElseThrow(() -> new IllegalArgumentException("Reaction not found"));
+        reactionRepository.delete(reaction);
+    }
 }

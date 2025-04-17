@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.config.EnableMongoAuditing;
 
 @ComponentScan(basePackages = {"com.phat", "com.phat.common"})
 @SpringBootApplication
+@EnableMongoAuditing
 public class InteractionServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(InteractionServiceApplication.class);

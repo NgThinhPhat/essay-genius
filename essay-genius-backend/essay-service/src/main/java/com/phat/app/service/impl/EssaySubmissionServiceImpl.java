@@ -1,5 +1,6 @@
 package com.phat.app.service.impl;
 
+import com.phat.api.model.request.ListEssayRequest;
 import com.phat.api.model.response.EssayResponseWrapper;
 import com.phat.api.model.response.EssaySaveResponse;
 import com.phat.api.model.response.EssayTaskTwoScoreResponse;
@@ -9,12 +10,14 @@ import com.phat.domain.model.EssaySubmission;
 import com.phat.infrastructure.mapper.EssaySubmissionMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static com.phat.common.Utils.getCurrentUser;
 
@@ -24,7 +27,7 @@ import static com.phat.common.Utils.getCurrentUser;
 public class EssaySubmissionServiceImpl implements com.phat.app.service.EssaySubmissionService {
     EssaySubmissionRepository essaySubmissionRepository;
     EssaySubmissionMapper essaySubmissionMapper;
-
+    MongoTemplate mongoTemplate;
     @Transactional
     public EssaySubmission saveEssay(String essayText, String promptText, EssayResponseWrapper<EssayTaskTwoScoreResponse> essayTaskTwoScoreResponse, Visibility visibility) throws Exception {
         if (essayTaskTwoScoreResponse == null || essayTaskTwoScoreResponse.getResult() == null) {
@@ -63,15 +66,23 @@ public class EssaySubmissionServiceImpl implements com.phat.app.service.EssaySub
     }
 
     @Override
-    public Page<EssaySaveResponse> findAllEssays(int page, int size, String sortBy, String sortDirection) throws Exception {
-        Sort sort = sortDirection.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
-        String currentUserId = getCurrentUser();
-        Page<EssaySubmission> essaySubmissions = essaySubmissionRepository.findAllByIsDeletedAndCreatedBy(false, currentUserId, pageable);
-        return essaySubmissions.map(essaySubmissionMapper::toEssaySaveResponse);
+    public Page<EssaySaveResponse> findAllEssays(ListEssayRequest listEssayRequest) throws Exception {
+//        Sort sort = sortDirection.equalsIgnoreCase("desc")
+//                ? Sort.by(sortBy).descending()
+//                : Sort.by(sortBy).ascending();
+//
+//        Pageable pageable = PageRequest.of(page, size, sort);
+//        String currentUserId = getCurrentUser();
+//        Page<EssaySubmission> essaySubmissions = essaySubmissionRepository.findAllByIsDeletedAndCreatedBy(false, currentUserId, pageable);
+//        return essaySubmissions.map(essaySubmissionMapper::toEssaySaveResponse);
+        Criteria criteria = listEssayRequest.toCriteria();
+        Query query = new Query(criteria).with(listEssayRequest.toPageable());
+        long count = mongoTemplate.count(query, EssaySubmission.class);
+        List<EssaySubmission> essaySubmissions = mongoTemplate.find(query, EssaySubmission.class);
+        List<EssaySaveResponse> responses = essaySubmissions.stream()
+                .map(essaySubmissionMapper::toEssaySaveResponse)
+                .toList();
+        return new PageImpl<>(responses, listEssayRequest.toPageable(), count);
     }
 
 }

@@ -5,6 +5,8 @@ import com.phat.domain.irepository.EssaySubmissionRepository;
 import com.phat.domain.model.EssaySubmission;
 import com.phat.grpc.essay.EssayServiceGrpc;
 import com.phat.grpc.essay.GetEssayIdsResponse;
+import com.phat.grpc.essay.IsEssayIdExistRequest;
+import com.phat.grpc.essay.IsEssayIdExistResponse;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +34,15 @@ public class EssayGrpcService extends EssayServiceGrpc.EssayServiceImplBase {
                 .build();
 
         responseObserver.onNext(response);
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void isEssayIdExist(IsEssayIdExistRequest request, StreamObserver<IsEssayIdExistResponse> responseObserver) {
+        String essayId = request.getEssayId();
+        boolean exists = essaySubmissionRepository.existsById(essayId);
+
+        responseObserver.onNext(IsEssayIdExistResponse.newBuilder().setIsExist(exists).build());
         responseObserver.onCompleted();
     }
 }

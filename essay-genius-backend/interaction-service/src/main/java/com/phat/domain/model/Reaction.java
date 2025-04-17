@@ -23,7 +23,7 @@ public class Reaction extends AbstractNoDelete{
     @Field
     ReactionType reactionType;
 
-    @Field("target_type")
+    @Field
     TargetType targetType;
 
 }

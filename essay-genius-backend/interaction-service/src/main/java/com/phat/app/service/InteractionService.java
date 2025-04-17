@@ -1,8 +1,11 @@
 package com.phat.app.service;
 
+import com.phat.api.model.request.ListCommentRequest;
+import com.phat.api.model.request.ListReactionRequest;
 import com.phat.domain.model.Comment;
 import com.phat.domain.model.Reaction;
 import com.phat.domain.model.TargetType;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,12 +15,13 @@ import java.util.List;
 public interface InteractionService {
     Comment addComment(String essayId, String content, String parentCommentId);
 
-    List<Comment> getComments(String essayId);
-
     Reaction addReaction(String targetId, String targetType, String type);
 
-    List<Reaction> getReactions(String targetId, String targetType);
+    Page<Comment> findAllComments(ListCommentRequest request);
+    Page<Reaction> findAllReactions(ListReactionRequest request);
 
-    List<Reaction> getReactions(String targetId, TargetType targetType);
+    void deleteComment(String commentId);
+
+    void deleteReaction(String reactionId);
 }
 

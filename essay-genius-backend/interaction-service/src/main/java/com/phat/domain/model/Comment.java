@@ -26,5 +26,8 @@ public class Comment extends AbstractEntity{
 
     @Builder.Default
     private Integer replyCount = 0;
+
+    @Builder.Default
+    private Integer reactionCount = 0;
 }
 
