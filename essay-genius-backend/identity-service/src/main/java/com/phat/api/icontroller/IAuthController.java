@@ -55,7 +55,7 @@ public interface IAuthController {
     )
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/send-email-verification")
-    public ResponseEntity<SendEmailVerificationResponse> sendEmailVerification(@RequestBody @Valid SendEmailVerificationRequest sendEmailVerificationRequest);
+    public ResponseEntity<SendEmailVerificationResponse> sendEmailVerification(SendEmailVerificationRequest sendEmailVerificationRequest);
 
     @Operation(
             summary = "Verify email by code",
@@ -65,7 +65,7 @@ public interface IAuthController {
     )
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/verify-email-by-code")
-    public ResponseEntity<VerifyEmailResponse> verifyEmailByCode(@RequestBody @Valid VerifyEmailRequest verifyEmailRequest);
+    public ResponseEntity<VerifyEmailResponse> verifyEmailByCode(VerifyEmailRequest verifyEmailRequest);
 
     @Operation(
             summary = "Verify email by token",

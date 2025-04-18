@@ -1,76 +1,130 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { CheckCircle2 } from "lucide-react"
+import { useSendEmailVerificationMutation, useVerifyEmailMutation } from "@/hooks/mutations/auth.mutation"
+import { toast } from "sonner"
+import { useSearchParams } from "next/navigation"
 
 export default function VerifyEmail() {
   const [code, setCode] = useState(["", "", "", "", "", ""])
   const [isVerified, setIsVerified] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [countdown, setCountdown] = useState(180)
+  const [isExpired, setIsExpired] = useState(false)
+
+  const searchParams = useSearchParams()
+  const email = searchParams.get("email") ?? ""
+
+  const sendEmailVerificationMutation = useSendEmailVerificationMutation();
 
   const handleChange = (index: number, value: string) => {
-    if (value.length > 1) {
-      value = value.charAt(0)
-    }
-
+    if (value.length > 1) value = value.charAt(0)
+    value = value.toUpperCase()
     const newCode = [...code]
     newCode[index] = value
-
     setCode(newCode)
 
-    // Auto-focus next input
     if (value && index < 5) {
       const nextInput = document.getElementById(`code-${index + 1}`)
-      if (nextInput) {
-        nextInput.focus()
-      }
+      nextInput?.focus()
     }
   }
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Handle backspace
     if (e.key === "Backspace" && !code[index] && index > 0) {
       const prevInput = document.getElementById(`code-${index - 1}`)
-      if (prevInput) {
-        prevInput.focus()
-      }
+      prevInput?.focus()
     }
   }
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault()
-    const pastedData = e.clipboardData.getData("text").trim()
+    const pastedData = e.clipboardData.getData("text").trim().toUpperCase()
 
-    if (/^\d{6}$/.test(pastedData)) {
-      const newCode = pastedData.split("")
+    if (/^[A-Z0-9]{6}$/.test(pastedData)) {
+      const newCode = pastedData.split("").slice(0, 6)
       setCode(newCode)
 
-      // Focus the last input
       const lastInput = document.getElementById("code-5")
-      if (lastInput) {
-        lastInput.focus()
-      }
+      if (lastInput) lastInput.focus()
+    } else {
+      toast.error("Please paste a valid 6-digit code.")
     }
   }
 
+
+  const verifyEmailMutation = useVerifyEmailMutation()
+
   const handleVerify = () => {
-    const fullCode = code.join("")
+    const fullCode = code.join("").toUpperCase()
+
     if (fullCode.length === 6) {
       setIsLoading(true)
 
-      // Simulate API call
-      setTimeout(() => {
-        setIsLoading(false)
-        setIsVerified(true)
-      }, 1500)
+      verifyEmailMutation.mutate(
+        {
+          email,
+          code: fullCode,
+        },
+        {
+          onSuccess: (data) => {
+            toast.success(data.message || "Email verified successfully!")
+            setIsVerified(true)
+          },
+          onError: (error) => {
+            toast.error(error.message)
+          },
+          onSettled: () => {
+            setIsLoading(false)
+          },
+        }
+      )
     }
   }
+
+
+  const handleResend = () => {
+    sendEmailVerificationMutation.mutate(
+      {
+        email,
+        type: "VERIFY_EMAIL_WITH_BOTH",
+      },
+      {
+        onSuccess: () => {
+          toast.success("Verification email resent!")
+          setCountdown(180)
+          setIsExpired(false)
+        },
+        onError: (error) => {
+          toast.error(error.message)
+        },
+      }
+    )
+  }
+
+  // Countdown logic
+  useEffect(() => {
+    if (isVerified) return
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          setIsExpired(true)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [isVerified])
 
   return (
     <div className="container flex items-center justify-center min-h-[calc(100vh-4rem)] py-12">
@@ -110,10 +164,16 @@ export default function VerifyEmail() {
                   />
                 ))}
               </div>
-              <div className="text-center text-sm">
-                <p className="text-muted-foreground">
-                  Didn't receive a code?{" "}
-                  <Button variant="link" className="p-0 h-auto">
+              <div className="text-center text-sm text-muted-foreground space-y-1">
+                <p>
+                  Code expires in {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, "0")}
+                </p>
+                {isExpired && (
+                  <p className="text-red-500">The code has expired. Please resend to get a new one.</p>
+                )}
+                <p>
+                  Didn’t receive a code?{" "}
+                  <Button variant="link" className="p-0 h-auto" onClick={handleResend}>
                     Resend
                   </Button>
                 </p>
@@ -127,7 +187,7 @@ export default function VerifyEmail() {
               <Link href="/sign-in">Continue to Sign In</Link>
             </Button>
           ) : (
-            <Button className="w-full" onClick={handleVerify} disabled={code.join("").length !== 6 || isLoading}>
+            <Button className="w-full" onClick={handleVerify} disabled={code.join("").length !== 6 || isLoading || isExpired}>
               {isLoading ? "Verifying..." : "Verify Email"}
             </Button>
           )}
@@ -136,3 +196,4 @@ export default function VerifyEmail() {
     </div>
   )
 }
+

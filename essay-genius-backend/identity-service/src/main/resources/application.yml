@@ -6,8 +6,7 @@ server:
 spring:
   config:
     import:
-      - "optional:file:env.properties"
-      - "optional:file:../env.properties"
+      - "file:env.properties"
   application:
     name: identity-service
   #_______________________________________DATABASE_______________________________________

@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = NoSuchMessageException.class)
     ResponseEntity<?> handlingNoSuchMessageException(NoSuchMessageException exception) {
         errorLogging(exception.getMessage(), exception);
-        return ResponseEntity.status(BAD_REQUEST).body(CommonResponse.builder().message(exception.getMessage()));
+        return ResponseEntity.status(BAD_REQUEST).body(CommonResponse.builder().message(getLocalizedMessage(exception.getMessage())));
     }
 
     @ExceptionHandler(value = AuthorizationDeniedException.class)

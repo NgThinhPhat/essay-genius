@@ -5,6 +5,10 @@ import {
   SignUpResponseSchema,
   RefreshBodySchema,
   TokensResponseSchema,
+  SendEmailVerificationBodySchema,
+  SendEmailVerificationResponseSchema,
+  VerifyEmailByCodeBodySchema,
+  VerifyEmailByCodeResponseSchema,
 } from "../schemas/auth.schema";
 import { restClient } from "../rest-client";
 
@@ -60,6 +64,44 @@ export async function refresh(
         "No-Auth": true,
       },
     },
+  );
+  return response.data;
+}
+
+export async function sendEmailVerification(
+  data: SendEmailVerificationBodySchema,
+  config?: AxiosRequestConfig<SendEmailVerificationBodySchema>,
+): Promise<SendEmailVerificationResponseSchema> {
+  const response = await restClient.post<
+    { message: string },
+    { email: string }
+  >("/identity/auth/send-email-verification",
+    data,
+    {
+      headers: {
+        "No-Auth": true,
+      },
+      ...config,
+    }
+  );
+  return response.data;
+}
+
+export async function verifyEmail(
+  data: VerifyEmailByCodeBodySchema,
+  config?: AxiosRequestConfig<VerifyEmailByCodeBodySchema>,
+): Promise<VerifyEmailByCodeResponseSchema> {
+  const response = await restClient.post<
+    { message: string },
+    { code: string }
+  >("/identity/auth/verify-email-by-code",
+    data,
+    {
+      headers: {
+        "No-Auth": true,
+      },
+      ...config,
+    }
   );
   return response.data;
 }

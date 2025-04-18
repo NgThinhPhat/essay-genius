@@ -8,12 +8,20 @@ import {
   SignUpResponseSchema,
   SignUpErrorResponseSchema,
   RefreshErrorResponseSchema,
-  TokensResponseSchema
+  TokensResponseSchema,
+  SendEmailVerificationResponseSchema,
+  SendEmailVerificationErrorResponseSchema,
+  SendEmailVerificationBodySchema,
+  VerifyEmailByCodeBodySchema,
+  VerifyEmailByCodeErrorResponseSchema,
+  VerifyEmailByCodeResponseSchema
 } from "@/lib/schemas/auth.schema"
 import {
   signUp,
   signIn,
-  refresh
+  refresh,
+  sendEmailVerification,
+  verifyEmail
 } from "@/lib/apis/auth.api";
 import { isAxiosError } from "axios";
 import { useCurrentUserActions } from "../current-user-store";
@@ -44,8 +52,8 @@ export function useSignInMutation() {
     mutationKey: ["auth", "sign-in"],
     mutationFn: (body) => signIn(body),
     onSuccess(data) {
-      setAccessToken(data.tokens.accessToken);
-      setRefreshToken(data.tokens.refreshToken);
+      setAccessToken(data.accessToken);
+      setRefreshToken(data.refreshToken);
       setCurrentUser(data.user);
       client.invalidateQueries({
         queryKey: ["current-user"],
@@ -69,6 +77,30 @@ export function useRefreshMutation() {
       setAccessToken(data.accessToken);
       setRefreshToken(data.refreshToken);
     },
+    throwOnError: (error) => isAxiosError(error),
+  });
+}
+
+export function useSendEmailVerificationMutation() {
+  return useMutation<
+    SendEmailVerificationResponseSchema,
+    SendEmailVerificationErrorResponseSchema,
+    SendEmailVerificationBodySchema
+  >({
+    mutationKey: ["auth", "send-email-verification"],
+    mutationFn: (body) => sendEmailVerification(body),
+    throwOnError: (error) => isAxiosError(error),
+  });
+}
+
+export function useVerifyEmailMutation() {
+  return useMutation<
+    VerifyEmailByCodeResponseSchema,
+    VerifyEmailByCodeErrorResponseSchema,
+    VerifyEmailByCodeBodySchema
+  >({
+    mutationKey: ["auth", "verify-email-by-code"],
+    mutationFn: (body) => verifyEmail(body),
     throwOnError: (error) => isAxiosError(error),
   });
 }

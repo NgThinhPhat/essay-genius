@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { 
+import {
   validationErrorResponseSchema,
   unauthorizedErrorResponseSchema
 } from "./errors.schema";
@@ -38,9 +38,11 @@ export const previewUserResponseSchema = z.object({
   id: z.string().uuid(),
   email: z.string(),
   name: z.string(),
+  avatar: z.string().optional(),
 });
 export type PreviewUserResponseSchema = z.infer<typeof previewUserResponseSchema>;
 
+//SIGN IN
 export const signInBodySchema = z.object({
   email: z.string().email(),
   password: z.string().min(6).max(20),
@@ -48,7 +50,8 @@ export const signInBodySchema = z.object({
 export type SignInBodySchema = z.infer<typeof signInBodySchema>;
 
 export const signInResponseSchema = z.object({
-  tokens: tokensResponseSchema,
+  accessToken: accessTokenSchema,
+  refreshToken: refreshTokenSchema,
   user: previewUserResponseSchema,
 });
 export type SignInResponseSchema = z.infer<typeof signInResponseSchema>;
@@ -59,13 +62,13 @@ export const signInErrorResponseSchema = z.discriminatedUnion("errorCode", [
 ]);
 export type SignInErrorResponseSchema = z.infer<typeof signInErrorResponseSchema>;
 
+//SIGN UP
 export const signUpBodySchema = z.object({
   firstName: z.string().min(2).max(50),
   lastName: z.string().min(2).max(50),
   email: z.string().email(),
   password: z.string().min(6).max(20),
-  confirmationPassword: z.string().min(6).max(20),
-  acceptTerms: z.boolean().default(false),
+  passwordConfirmation: z.string().min(6).max(20),
 });
 export type SignUpBodySchema = z.infer<typeof signUpBodySchema>;
 
@@ -85,3 +88,42 @@ export const refreshErrorResponseSchema = z.discriminatedUnion("errorCode", [
   unauthorizedErrorResponseSchema,
 ]);
 export type RefreshErrorResponseSchema = z.infer<typeof refreshErrorResponseSchema>;
+
+// SEND EMAIL VERIFICATION
+export const sendEmailVerificationBodySchema = z.object({
+  email: z.string().email(),
+  type: z.enum(["VERIFY_EMAIL_WITH_BOTH", "VERIFY_EMAIL_BY_CODE", "VERIFY_EMAIL_BY_TOKEN"]),
+});
+export type SendEmailVerificationBodySchema = z.infer<typeof sendEmailVerificationBodySchema>;
+
+export const sendEmailVerificationResponseSchema = z.object({
+  message: z.string(),
+});
+export type SendEmailVerificationResponseSchema = z.infer<typeof sendEmailVerificationResponseSchema>;
+
+export const sendEmailVerificationErrorResponseSchema = z.discriminatedUnion("errorCode", [
+  validationErrorResponseSchema,
+  unauthorizedErrorResponseSchema,
+]);
+export type SendEmailVerificationErrorResponseSchema = z.infer<typeof sendEmailVerificationErrorResponseSchema>;
+
+// VERIFY EMAIL
+export const verifyEmailByCodeBodySchema = z.object({
+  email: z.string().email(),
+  code: z.string().length(6),
+});
+export type VerifyEmailByCodeBodySchema = z.infer<typeof verifyEmailByCodeBodySchema>;
+
+export const verifyEmailByCodeResponseSchema = z.object({
+  message: z.string(),
+});
+export type VerifyEmailByCodeResponseSchema = z.infer<typeof verifyEmailByCodeResponseSchema>;
+
+export const verifyEmailByCodeErrorResponseSchema = z.discriminatedUnion("errorCode", [
+  validationErrorResponseSchema,
+  unauthorizedErrorResponseSchema,
+]);
+export type VerifyEmailByCodeErrorResponseSchema = z.infer<typeof verifyEmailByCodeErrorResponseSchema>;
+
+
+
