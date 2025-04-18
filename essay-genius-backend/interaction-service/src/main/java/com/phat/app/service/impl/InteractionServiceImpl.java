@@ -21,6 +21,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,24 +82,21 @@ public class InteractionServiceImpl implements InteractionService {
     public Page<Comment> findAllComments(ListCommentRequest request) {
         Query query = new Query(request.toCriteria()).with(request.toPageable());
 
-        long total = mongoTemplate.count(new Query(request.toCriteria()), Comment.class);
+        long total = mongoTemplate.count(query, Comment.class);
 
         List<Comment> comments = mongoTemplate.find(query, Comment.class);
 
-        Pageable pageable = request.toPageable();
-        return new PageImpl<>(comments, pageable, total);
+        return new PageImpl<>(comments, request.toPageable(), total);
     }
 
     public Page<Reaction> findAllReactions(ListReactionRequest request) {
-        // Build query từ criteria
         Query query = new Query(request.toCriteria()).with(request.toPageable());
 
-        long total = mongoTemplate.count(new Query(request.toCriteria()), Reaction.class);
+        long total = mongoTemplate.count(query, Reaction.class);
 
         List<Reaction> reactions = mongoTemplate.find(query, Reaction.class);
 
-        Pageable pageable = request.toPageable();
-        return new PageImpl<>(reactions, pageable, total);
+        return new PageImpl<>(reactions, request.toPageable(), total);
     }
 
     @Override

@@ -2,8 +2,9 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { ThemeProvider } from "@/components/layout/theme-provider"
+import { ThemeProvider } from "next-themes"
 import Header from "@/components/layout/header"
+import { Toaster } from "sonner"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,11 +25,11 @@ export default function RootLayout({
           <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
             <Header />
             <div className="flex-1">{children}</div>
+            <Toaster />
           </div>
         </ThemeProvider>
       </body>
     </html>
   )
 }
-
 

@@ -27,7 +27,9 @@ jwt:
 
 spring:
   config:
-    import: file:env.properties
+    import:
+      - "optional:file:env.properties"
+      - "optional:file:../env.properties"
   application:
     name: interaction-service
   messages:

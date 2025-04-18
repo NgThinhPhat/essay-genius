@@ -41,7 +41,7 @@ public class MockServiceImpl implements MockService {
 
         // Tạo comments và reactions mẫu cho mỗi essay
         for (String essayId : essayIds) {
-            int topLevelCommentCount = 10 + random.nextInt(10);
+            int topLevelCommentCount = 2 + random.nextInt(1);
             for (int i = 0; i < topLevelCommentCount; i++) {
                 Comment parent = interactionService.addComment(
                         essayId,
@@ -49,15 +49,15 @@ public class MockServiceImpl implements MockService {
                         null
                 );
 
-                int childCommentCount = 3 + random.nextInt(5);
-                int replyCount = 3 + random.nextInt(5);
+                int childCommentCount = 1 + random.nextInt(2);
+                int replyCount = 2 + random.nextInt(1);
                 for (int a = 0; a < replyCount; a++) {
                     Comment child = interactionService.addComment(
                             essayId,
                             "Child comment " + a + " to comment " + parent.getId(),
                             parent.getId()
                     );
-                    int reactionCount = 10 + random.nextInt(30);
+                    int reactionCount = 2 + random.nextInt(2);
                     for (int r = 0; r < reactionCount; r++) {
                         interactionService.addReaction(child.getId(), TargetType.COMMENT.name(), randomReactionType().name());
                     }
@@ -67,19 +67,19 @@ public class MockServiceImpl implements MockService {
                                 "Reply " + j + " to comment " + child.getId(),
                                 child.getId()
                         );
-                        int reactionCount2 = 10 + random.nextInt(30);
+                        int reactionCount2 = 2 + random.nextInt(2);
                         for (int r = 0; r < reactionCount; r++) {
                             interactionService.addReaction(child2.getId(), TargetType.COMMENT.name(), randomReactionType().name());
                         }
                     }
                 }
-                int reactionCount = 10 + random.nextInt(30);
+                int reactionCount = 2 + random.nextInt(2);
                 for (int r = 0; r < reactionCount; r++) {
                     interactionService.addReaction(parent.getId(), TargetType.COMMENT.name(), randomReactionType().name());
                 }
             }
 
-            int essayReactionCount = 50 + random.nextInt(30);
+            int essayReactionCount = 3 + random.nextInt(2);
             for (int r = 0; r < essayReactionCount; r++) {
                 Reaction reaction = Reaction.builder()
                         .targetId(essayId)

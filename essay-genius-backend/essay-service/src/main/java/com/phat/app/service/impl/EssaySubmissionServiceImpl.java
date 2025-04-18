@@ -67,14 +67,6 @@ public class EssaySubmissionServiceImpl implements com.phat.app.service.EssaySub
 
     @Override
     public Page<EssaySaveResponse> findAllEssays(ListEssayRequest listEssayRequest) throws Exception {
-//        Sort sort = sortDirection.equalsIgnoreCase("desc")
-//                ? Sort.by(sortBy).descending()
-//                : Sort.by(sortBy).ascending();
-//
-//        Pageable pageable = PageRequest.of(page, size, sort);
-//        String currentUserId = getCurrentUser();
-//        Page<EssaySubmission> essaySubmissions = essaySubmissionRepository.findAllByIsDeletedAndCreatedBy(false, currentUserId, pageable);
-//        return essaySubmissions.map(essaySubmissionMapper::toEssaySaveResponse);
         Criteria criteria = listEssayRequest.toCriteria();
         Query query = new Query(criteria).with(listEssayRequest.toPageable());
         long count = mongoTemplate.count(query, EssaySubmission.class);
