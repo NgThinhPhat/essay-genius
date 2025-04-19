@@ -96,6 +96,11 @@ export const sendEmailVerificationBodySchema = z.object({
 });
 export type SendEmailVerificationBodySchema = z.infer<typeof sendEmailVerificationBodySchema>;
 
+export const sendEmailForgotPasswordBodySchema = z.object({
+  email: z.string(),
+});
+export type SendEmailForgotPasswordBodySchema = z.infer<typeof sendEmailForgotPasswordBodySchema>;
+
 export const sendEmailVerificationResponseSchema = z.object({
   message: z.string(),
 });
@@ -125,5 +130,34 @@ export const verifyEmailByCodeErrorResponseSchema = z.discriminatedUnion("errorC
 ]);
 export type VerifyEmailByCodeErrorResponseSchema = z.infer<typeof verifyEmailByCodeErrorResponseSchema>;
 
+// forgot PASSWORD
+export const forgotPasswordResponseSchema = z.object({
+  message: z.string(),
+  token: z.string(),
+});
+export type ForgotPasswordResponseSchema = z.infer<typeof forgotPasswordResponseSchema>;
 
+export const forgotPasswordErrorResponseSchema = z.discriminatedUnion("errorCode", [
+  validationErrorResponseSchema,
+  unauthorizedErrorResponseSchema,
+]);
+export type ForgotPasswordErrorResponseSchema = z.infer<typeof forgotPasswordErrorResponseSchema>;
 
+// RESET PASSWORD
+export const resetPasswordBodySchema = z.object({
+  token: z.string(),
+  password: z.string().min(6).max(20),
+  passwordConfirmation: z.string().min(6).max(20),
+});
+export type ResetPasswordBodySchema = z.infer<typeof resetPasswordBodySchema>;
+
+export const resetPasswordResponseSchema = z.object({
+  message: z.string(),
+});
+export type ResetPasswordResponseSchema = z.infer<typeof resetPasswordResponseSchema>;
+
+export const resetPasswordErrorResponseSchema = z.discriminatedUnion("errorCode", [
+  validationErrorResponseSchema,
+  unauthorizedErrorResponseSchema,
+]);
+export type ResetPasswordErrorResponseSchema = z.infer<typeof resetPasswordErrorResponseSchema>;

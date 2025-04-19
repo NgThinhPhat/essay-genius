@@ -14,14 +14,24 @@ import {
   SendEmailVerificationBodySchema,
   VerifyEmailByCodeBodySchema,
   VerifyEmailByCodeErrorResponseSchema,
-  VerifyEmailByCodeResponseSchema
+  VerifyEmailByCodeResponseSchema,
+  SendEmailForgotPasswordBodySchema,
+  ForgotPasswordErrorResponseSchema,
+  forgotPasswordResponseSchema,
+  ForgotPasswordResponseSchema,
+  ResetPasswordResponseSchema,
+  ResetPasswordErrorResponseSchema,
+  ResetPasswordBodySchema
 } from "@/lib/schemas/auth.schema"
 import {
   signUp,
   signIn,
   refresh,
   sendEmailVerification,
-  verifyEmail
+  verifyEmail,
+  sendMailForgotPassword,
+  forgotPassword,
+  resetPassword
 } from "@/lib/apis/auth.api";
 import { isAxiosError } from "axios";
 import { useCurrentUserActions } from "../current-user-store";
@@ -93,6 +103,18 @@ export function useSendEmailVerificationMutation() {
   });
 }
 
+export function useSendEmailForgotPasswordMutation() {
+  return useMutation<
+    SendEmailVerificationResponseSchema,
+    SendEmailVerificationErrorResponseSchema,
+    SendEmailForgotPasswordBodySchema
+  >({
+    mutationKey: ["auth", "send-forgot-password"],
+    mutationFn: (body) => sendMailForgotPassword(body),
+    throwOnError: (error) => isAxiosError(error),
+  });
+}
+
 export function useVerifyEmailMutation() {
   return useMutation<
     VerifyEmailByCodeResponseSchema,
@@ -101,6 +123,29 @@ export function useVerifyEmailMutation() {
   >({
     mutationKey: ["auth", "verify-email-by-code"],
     mutationFn: (body) => verifyEmail(body),
+    throwOnError: (error) => isAxiosError(error),
+  });
+}
+
+export function useForgotPasswordMutation() {
+  return useMutation<
+    ForgotPasswordResponseSchema,
+    ForgotPasswordErrorResponseSchema,
+    VerifyEmailByCodeBodySchema
+  >({
+    mutationKey: ["auth", "forgot-password"],
+    mutationFn: (body) => forgotPassword(body),
+    throwOnError: (error) => isAxiosError(error),
+  });
+}
+export function useResetPasswordMutation() {
+  return useMutation<
+    ResetPasswordResponseSchema,
+    ResetPasswordErrorResponseSchema,
+    ResetPasswordBodySchema
+  >({
+    mutationKey: ["auth", "reset-password"],
+    mutationFn: (body) => resetPassword(body),
     throwOnError: (error) => isAxiosError(error),
   });
 }

@@ -9,6 +9,10 @@ import {
   SendEmailVerificationResponseSchema,
   VerifyEmailByCodeBodySchema,
   VerifyEmailByCodeResponseSchema,
+  SendEmailForgotPasswordBodySchema,
+  ResetPasswordBodySchema,
+  ResetPasswordResponseSchema,
+  ForgotPasswordResponseSchema,
 } from "../schemas/auth.schema";
 import { restClient } from "../rest-client";
 
@@ -68,13 +72,32 @@ export async function refresh(
   return response.data;
 }
 
+export async function sendMailForgotPassword(
+  data: SendEmailForgotPasswordBodySchema,
+  config?: AxiosRequestConfig<SendEmailForgotPasswordBodySchema>,
+): Promise<SendEmailVerificationResponseSchema> {
+  const response = await restClient.post<
+    SendEmailVerificationResponseSchema,
+    SendEmailForgotPasswordBodySchema
+  >("/identity/auth/send-forgot-password",
+    data,
+    {
+      headers: {
+        "No-Auth": true,
+      },
+      ...config,
+    }
+  );
+  return response.data;
+}
+
 export async function sendEmailVerification(
   data: SendEmailVerificationBodySchema,
   config?: AxiosRequestConfig<SendEmailVerificationBodySchema>,
 ): Promise<SendEmailVerificationResponseSchema> {
   const response = await restClient.post<
-    { message: string },
-    { email: string }
+    SendEmailVerificationResponseSchema,
+    SendEmailVerificationBodySchema
   >("/identity/auth/send-email-verification",
     data,
     {
@@ -92,9 +115,47 @@ export async function verifyEmail(
   config?: AxiosRequestConfig<VerifyEmailByCodeBodySchema>,
 ): Promise<VerifyEmailByCodeResponseSchema> {
   const response = await restClient.post<
-    { message: string },
-    { code: string }
+    VerifyEmailByCodeResponseSchema,
+    VerifyEmailByCodeBodySchema
   >("/identity/auth/verify-email-by-code",
+    data,
+    {
+      headers: {
+        "No-Auth": true,
+      },
+      ...config,
+    }
+  );
+  return response.data;
+}
+
+export async function forgotPassword(
+  data: VerifyEmailByCodeBodySchema,
+  config?: AxiosRequestConfig<VerifyEmailByCodeBodySchema>,
+): Promise<ForgotPasswordResponseSchema> {
+  const response = await restClient.post<
+    ForgotPasswordResponseSchema,
+    VerifyEmailByCodeBodySchema
+  >("/identity/auth/forgot-password",
+    data,
+    {
+      headers: {
+        "No-Auth": true,
+      },
+      ...config,
+    }
+  );
+  return response.data;
+}
+
+export async function resetPassword(
+  data: ResetPasswordBodySchema,
+  config?: AxiosRequestConfig<ResetPasswordBodySchema>,
+): Promise<ResetPasswordResponseSchema> {
+  const response = await restClient.post<
+    ResetPasswordResponseSchema,
+    ResetPasswordBodySchema
+  >("/identity/auth/reset-password",
     data,
     {
       headers: {

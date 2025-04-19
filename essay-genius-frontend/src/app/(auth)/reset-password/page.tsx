@@ -4,89 +4,158 @@ import type React from "react"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { CheckCircle2, Eye, EyeOff } from "lucide-react"
+import {
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+} from "@/hooks/mutations/auth.mutation"
+import { toast } from "sonner"
+import { useSearchParams } from "next/navigation"
+import {
+  resetPasswordBodySchema,
+  ResetPasswordBodySchema,
+} from "@/lib/schemas/auth.schema"
+import { FormProvider, useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 
 export default function ResetPassword() {
   const [step, setStep] = useState<"code" | "reset" | "success">("code")
   const [code, setCode] = useState(["", "", "", "", "", ""])
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [token, setToken] = useState("")
+
+  const searchParams = useSearchParams()
+  const email = searchParams.get("email") ?? ""
+
+  const form = useForm<ResetPasswordBodySchema>({
+    resolver: zodResolver(resetPasswordBodySchema),
+    defaultValues: {
+      token: "",
+      password: "",
+      passwordConfirmation: "",
+    },
+  })
+
+  const {
+    control,
+    handleSubmit,
+    getValues,
+    setValue,
+    formState: { errors },
+  } = form
 
   const handleCodeChange = (index: number, value: string) => {
     if (value.length > 1) {
       value = value.charAt(0)
     }
 
+    value = value.toUpperCase()
     const newCode = [...code]
     newCode[index] = value
 
     setCode(newCode)
 
-    // Auto-focus next input
     if (value && index < 5) {
       const nextInput = document.getElementById(`code-${index + 1}`)
-      if (nextInput) {
-        nextInput.focus()
-      }
+      nextInput?.focus()
     }
   }
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Handle backspace
     if (e.key === "Backspace" && !code[index] && index > 0) {
       const prevInput = document.getElementById(`code-${index - 1}`)
-      if (prevInput) {
-        prevInput.focus()
-      }
+      prevInput?.focus()
     }
   }
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault()
-    const pastedData = e.clipboardData.getData("text").trim()
+    const pastedData = e.clipboardData.getData("text").trim().toUpperCase()
 
-    if (/^\d{6}$/.test(pastedData)) {
-      const newCode = pastedData.split("")
+    if (/^[A-Z0-9]{6}$/.test(pastedData)) {
+      const newCode = pastedData.split("").slice(0, 6)
       setCode(newCode)
-
-      // Focus the last input
       const lastInput = document.getElementById("code-5")
-      if (lastInput) {
-        lastInput.focus()
-      }
+      lastInput?.focus()
+    } else {
+      toast.error("Please paste a valid 6-digit code.")
     }
   }
+
+  const forgotPasswordMutation = useForgotPasswordMutation()
 
   const handleVerifyCode = () => {
-    const fullCode = code.join("")
+    const fullCode = code.join("").toUpperCase()
+
     if (fullCode.length === 6) {
       setIsLoading(true)
-
-      // Simulate API call
-      setTimeout(() => {
-        setIsLoading(false)
-        setStep("reset")
-      }, 1500)
+      forgotPasswordMutation.mutate(
+        {
+          email,
+          code: fullCode,
+        },
+        {
+          onSuccess: (data) => {
+            toast.success(data.message || "You are ready to reset password!")
+            setToken(data.token)
+            setValue("token", data.token)
+            setStep("reset")
+          },
+          onError: (error) => {
+            toast.error(error.message)
+          },
+          onSettled: () => {
+            setIsLoading(false)
+          },
+        }
+      )
     }
   }
 
-  const handleResetPassword = () => {
-    if (password && password === confirmPassword) {
-      setIsLoading(true)
+  const resetPasswordMutation = useResetPasswordMutation()
 
-      // Simulate API call
-      setTimeout(() => {
-        setIsLoading(false)
-        setStep("success")
-      }, 1500)
-    }
+  const handleResetPassword = (values: ResetPasswordBodySchema) => {
+    const { password, passwordConfirmation } = values
+
+    setIsLoading(true)
+    resetPasswordMutation.mutate(
+      {
+        token,
+        password,
+        passwordConfirmation,
+      },
+      {
+        onSuccess: (data) => {
+          toast.success(data.message || "Password reset successfully!")
+          setStep("success")
+        },
+        onError: (error) => {
+          toast.error(error.message)
+        },
+        onSettled: () => {
+          setIsLoading(false)
+        },
+      }
+    )
   }
 
   return (
@@ -123,8 +192,8 @@ export default function ResetPassword() {
               <div className="text-center text-sm">
                 <p className="text-muted-foreground">
                   Didn't receive a code?{" "}
-                  <Button variant="link" className="p-0 h-auto">
-                    Resend
+                  <Button variant="link" className="p-0 h-auto" asChild>
+                    <Link href="/forgot-password">Try again</Link>
                   </Button>
                 </p>
               </div>
@@ -132,50 +201,79 @@ export default function ResetPassword() {
           )}
 
           {step === "reset" && (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="password">New Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pr-10"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm New Password</Label>
-                <div className="relative">
-                  <Input
-                    id="confirm-password"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pr-10"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-            </>
+            <FormProvider {...form}>
+              <form onSubmit={handleSubmit(handleResetPassword)} className="space-y-4">
+                <FormField
+                  control={control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>New Password</FormLabel>
+                      <div className="relative">
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type={showPassword ? "text" : "password"}
+                            className="pr-10"
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-0 top-0 h-full px-3"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={control}
+                  name="passwordConfirmation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm New Password</FormLabel>
+                      <div className="relative">
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type={showConfirmPassword ? "text" : "password"}
+                            className="pr-10"
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-0 top-0 h-full px-3"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Resetting..." : "Reset Password"}
+                </Button>
+              </form>
+            </FormProvider>
           )}
 
           {step === "success" && (
@@ -184,25 +282,21 @@ export default function ResetPassword() {
                 <CheckCircle2 className="h-12 w-12 text-primary" />
               </div>
               <p className="text-center">
-                Your password has been reset successfully. You can now sign in with your new password.
+                Your password has been reset successfully. You can now sign in
+                with your new password.
               </p>
             </div>
           )}
         </CardContent>
+
         <CardFooter className="flex flex-col space-y-4">
           {step === "code" && (
-            <Button className="w-full" onClick={handleVerifyCode} disabled={code.join("").length !== 6 || isLoading}>
-              {isLoading ? "Verifying..." : "Verify Code"}
-            </Button>
-          )}
-
-          {step === "reset" && (
             <Button
               className="w-full"
-              onClick={handleResetPassword}
-              disabled={!password || password !== confirmPassword || isLoading}
+              onClick={handleVerifyCode}
+              disabled={code.join("").length !== 6 || isLoading}
             >
-              {isLoading ? "Resetting..." : "Reset Password"}
+              {isLoading ? "Verifying..." : "Verify Code"}
             </Button>
           )}
 
@@ -216,3 +310,4 @@ export default function ResetPassword() {
     </div>
   )
 }
+

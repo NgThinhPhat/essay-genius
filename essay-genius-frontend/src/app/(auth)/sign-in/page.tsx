@@ -1,17 +1,21 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+
 import {
   signInBodySchema,
   SignInBodySchema,
 } from "@/lib/schemas/auth.schema";
+import { useSignInMutation } from "@/hooks/mutations/auth.mutation";
+import { mapFieldErrorToFormError } from "@/lib/utils";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
 import {
   Card,
   CardContent,
@@ -20,9 +24,13 @@ import {
   CardDescription,
   CardFooter,
 } from "@/components/ui/card";
-import { useSignInMutation } from "@/hooks/mutations/auth.mutation";
-import { mapFieldErrorToFormError } from "@/lib/utils";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 export default function SignIn() {
   const router = useRouter();
@@ -30,8 +38,8 @@ export default function SignIn() {
   const form = useForm<SignInBodySchema>({
     resolver: zodResolver(signInBodySchema),
     defaultValues: {
-      email: "nguyenthinhphat3009@gmail.com",
-      password: "phat12",
+      email: "",
+      password: "",
     },
   });
 
@@ -59,15 +67,22 @@ export default function SignIn() {
     });
   };
 
+  // Focus email on load
+  useEffect(() => {
+    const emailInput = document.querySelector('input[name="email"]') as HTMLInputElement;
+    emailInput?.focus();
+  }, []);
+
   return (
     <div className="container flex items-center justify-center min-h-[calc(100vh-4rem)] py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Sign in</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
           <CardDescription className="text-center">
             Enter your email and password to sign in to your account
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           <FormProvider {...form}>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -88,6 +103,7 @@ export default function SignIn() {
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={control}
                 name="password"
@@ -113,9 +129,10 @@ export default function SignIn() {
             </form>
           </FormProvider>
         </CardContent>
+
         <CardFooter className="flex flex-col items-center space-y-2">
           <div className="text-center text-sm">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/sign-up" className="text-primary hover:underline">
               Sign up
             </Link>
