@@ -31,6 +31,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useMutation } from "@tanstack/react-query";
+import { z } from "zod";
+import { api } from "@/lib/api";
+import { setCookie } from "cookies-next/client";
+import { COOKIE_KEY_ACCESS_TOKEN, COOKIE_KEY_REFRESH_TOKEN } from "@/constants";
+
+
+type FormValues = z.infer<typeof signInBodySchema>;
 
 export default function SignIn() {
   const router = useRouter();
@@ -50,21 +58,38 @@ export default function SignIn() {
     formState: { errors },
   } = form;
 
-  const mutation = useSignInMutation();
+  const mutation = useMutation({
+    mutationFn: (data: FormValues) => api.auth.signIn({ body: data }),
+    onSuccess: async (response) => {
+      switch (response.status) {
+        case 200:
+          const { accessToken, refreshToken } = response.body;
+          setCookie(COOKIE_KEY_ACCESS_TOKEN, accessToken, {
+            httpOnly: false,
+          });
+          setCookie(COOKIE_KEY_REFRESH_TOKEN, refreshToken, {
+            httpOnly: false,
+          });
+          toast("Login successful");
+          router.push("/");
+          break;
+        default:
+          form.setError("root", {
+            type: String(response.status),
+            message: "Login failed",
+          });
+      }
+    },
+    onError: () => {
+      form.setError("email", {
+        type: "server",
+        message: "Login failed",
+      });
+    },
+  });
 
   const onSubmit = (data: SignInBodySchema) => {
-    mutation.mutate(data, {
-      onSuccess: () => {
-        toast.success("Signed in successfully!");
-        router.push("/");
-      },
-      onError: (error) => {
-        toast.error(error.message);
-        if (error.errorCode === "common/validation-error") {
-          mapFieldErrorToFormError(setError, error.errors);
-        }
-      },
-    });
+    mutation.mutate(data);
   };
 
   // Focus email on load
