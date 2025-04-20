@@ -109,8 +109,7 @@ public class AuthController implements IAuthController {
     authService.sendEmailForgotPassword(sendForgotPasswordRequest.email());
 
     return ResponseEntity.status(HttpStatus.OK).body(new SendEmailFogotPasswordResponse(
-        getLocalizedMessage("send_forgot_password_email_success"),
-        Date.from(Instant.now().plus(1, ChronoUnit.MINUTES))));
+        getLocalizedMessage("send_forgot_password_email_success")));
   }
 
   @Override

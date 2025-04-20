@@ -1,12 +1,8 @@
 package com.phat.api.model.response;
 
-import java.util.Date;
+public record SendEmailFogotPasswordResponse(
 
-public record SendEmailFogotPasswordResponse (
-
-    String message,
-
-    Date retryAfter
+    String message
 
 ) {
 
