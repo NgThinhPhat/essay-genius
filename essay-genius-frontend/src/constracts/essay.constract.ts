@@ -44,9 +44,8 @@ export type EssayTaskTwoScoringRequest = z.infer<typeof essayTaskTwoScoringReque
 
 export const essayResponseWrapperObjectSchema = z.object({
   valid: z.boolean(),
-  result: z.any(),
-});
-export type EssayResponseWrapperObject = z.infer<typeof essayResponseWrapperObjectSchema>;
+  result: z.union([essayTaskTwoScoreResponseSchema, z.string()]), // if invalid result is just a string
+}); export type EssayResponseWrapperObject = z.infer<typeof essayResponseWrapperObjectSchema>;
 
 export const essayResponseWrapperScoreSchema = z.object({
   valid: z.boolean(),
