@@ -53,13 +53,13 @@ export const essayResponseWrapperScoreSchema = z.object({
 });
 export type EssayResponseWrapperScore = z.infer<typeof essayResponseWrapperScoreSchema>;
 
-export const essayaveRequestSchema = z.object({
+export const essaySaveRequestSchema = z.object({
   essayText: z.string(),
   promptText: z.string(),
   essayTaskTwoScoreResponse: essayResponseWrapperScoreSchema,
   visibility: z.string(),
 });
-export type essayaveRequest = z.infer<typeof essaySaveRequestSchema>;
+export type EssaySaveRequestSchema = z.infer<typeof essaySaveRequestSchema>;
 
 export const essayResponseWrapperStringSchema = z.object({
   valid: z.boolean(),
@@ -76,11 +76,11 @@ export const commonResponseSchema = z.object({
 export type CommonResponse = z.infer<typeof commonResponseSchema>;
 
 // Replace z.any() with real schema if available
-export const essayaveResponseSchema = z.any();
-export type essayaveResponse = z.infer<typeof essaySaveResponseSchema>;
+export const essaySaveResponseSchema = z.any();
+export type essaySaveResponseSchema = z.infer<typeof essaySaveResponseSchema>;
 
-export const pageessayaveResponseSchema = z.any();
-export type PageessayaveResponse = z.infer<typeof pageEssaySaveResponseSchema>;
+export const pageEssaySaveResponseSchema = z.any();
+export type PageEssaySaveResponseSchema = z.infer<typeof pageEssaySaveResponseSchema>;
 
 export const listEssayRequestSchema = z.object({
   page: z.number().int(),
@@ -90,6 +90,10 @@ export const listEssayRequestSchema = z.object({
 });
 export type ListEssayRequest = z.infer<typeof listEssayRequestSchema>;
 
+export const generateEssayPromptRequestSchema = z.object({
+  topics: z.array(z.string()),
+});
+export type GenerateEssayPromptRequest = z.infer<typeof generateEssayPromptRequestSchema>;
 // =================== ROUTER CONTRACT ===================
 
 export const essayContract = c.router({
@@ -104,7 +108,7 @@ export const essayContract = c.router({
   saveEssay: {
     method: 'POST',
     path: '/essay/save-essay',
-    body: essayaveRequestSchema,
+    body: essaySaveRequestSchema,
     responses: {
       201: commonResponseSchema,
     },
@@ -112,7 +116,7 @@ export const essayContract = c.router({
   generateEssayPrompt: {
     method: 'POST',
     path: '/essay/generate-essay-prompt',
-    body: z.array(z.string()),
+    body: generateEssayPromptRequestSchema,
     responses: {
       200: essayResponseWrapperStringSchema,
     },
@@ -122,7 +126,7 @@ export const essayContract = c.router({
     path: '/essay',
     query: listEssayRequestSchema,
     responses: {
-      200: pageessayaveResponseSchema,
+      200: pageEssaySaveResponseSchema,
     },
   },
   hello: {
@@ -137,7 +141,7 @@ export const essayContract = c.router({
     path: '/essay/get-essay/:id',
     pathParams: z.object({ id: z.string() }),
     responses: {
-      200: essayaveResponseSchema,
+      200: essaySaveResponseSchema,
     },
   },
   deleteEssay: {

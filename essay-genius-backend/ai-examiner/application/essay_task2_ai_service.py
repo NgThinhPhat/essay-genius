@@ -50,6 +50,8 @@ The content is mostly gibberish or unrelated text.
 The prompt is missing or meaningless.
 
 🔹 Step 2: Return a JSON result based on validity
+Rules:
+    All Band score you give must be a half bands score
 
 ✅ If valid, return the following JSON structure:
 {
@@ -216,19 +218,19 @@ Now, assemble the JSON output."""
   \"result\":{
   \"scores\": {
     \"task_response\": {
-      \"band\": 6,
+      \"band\": 6.5,
       \"explanation\": \"The essay addresses all parts of the prompt, discussing both the causes of increased freshwater demand and potential solutions for governments and individuals. However, the development of ideas is somewhat limited. Causes like 'population explosion' and 'pollution' are mentioned but not explored in depth. Solutions are listed rather than fully explained or supported with specific examples, which the prompt requests. The position is clear but lacks detailed substantiation.\"
     },
     \"coherence_and_cohesion\": {
-      \"band\": 6,
+      \"band\": 6.0,
       \"explanation\": \"The essay is logically organized with a clear introduction, body paragraphs addressing causes and solutions separately, and a conclusion. Paragraphing is generally appropriate, although the final body paragraph on individual actions is noticeably shorter and less developed than the others. Cohesive devices like 'Firstly', 'Secondly', 'Furthermore', 'Similarly', 'Thus' are used, but sometimes mechanically. The transition 'On the other hand' between causes and solutions is slightly awkward. Overall progression is clear, but flow could be smoother.\"
     },
     \"lexical_resource\": {
-      \"band\": 6,
+      \"band\": 6.5,
       \"explanation\": \"There is a reasonable range of vocabulary ('time immemorial', 'scarce', 'potable', 'compounded', 'catalysed', 'legislations', 'enact infrastructures', 'noble cause'). Topic-specific vocabulary related to water scarcity is used adequately. However, there are some instances of awkward phrasing or imprecise word choice ('natural salt free water', 'elicit certain steps', 'enact infrastructures', 'refrain themselves'). Repetition of key terms like 'fresh water' and 'demand' is noticeable. While errors are present, they generally do not impede communication.\"
     },
     \"grammatical_range_and_accuracy\": {
-      \"band\": 6,
+      \"band\": 6.0,
       \"explanation\": \"The essay uses a mix of simple and complex sentence structures, including relative clauses and passive voice. However, there are several grammatical errors that detract from the overall quality. These include incorrect verb forms ('has lead' instead of 'has led'), article usage ('public' instead of 'the public'), awkward noun phrasing ('natural fresh water reserve pollution'), incorrect collocations ('enact infrastructures'), and redundant pronouns ('refrain themselves'). Punctuation is mostly adequate, but minor errors exist. Despite these errors, the meaning is generally clear.\"
     }
   },

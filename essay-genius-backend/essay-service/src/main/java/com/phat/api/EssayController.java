@@ -1,5 +1,6 @@
 package com.phat.api;
 
+import com.phat.api.model.request.TopicsRequest;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import com.phat.api.model.request.EssaySaveRequest;
 import com.phat.api.model.request.EssayTaskTwoScoringRequest;
@@ -41,10 +42,10 @@ public class EssayController {
 
   @PostMapping("/generate-essay-prompt")
   @ResponseStatus(HttpStatus.OK)
-  public ResponseEntity<EssayResponseWrapper<String>> generateEssayPrompt(@RequestBody List<String> topic)
+  public ResponseEntity<EssayResponseWrapper<String>> generateEssayPrompt(@RequestBody TopicsRequest request)
       throws Exception {
     return ResponseEntity.ok()
-        .body(aiEssayGrpcClient.generateEssayPrompt(topic));
+        .body(aiEssayGrpcClient.generateEssayPrompt(request.topics()));
   }
 
   @PostMapping("/save-essay")
@@ -55,7 +56,7 @@ public class EssayController {
         essaySaveRequest.getEssayText(),
         essaySaveRequest.getEssayTaskTwoScoreResponse(),
         Visibility.fromValue(essaySaveRequest.getVisibility()));
-    return ResponseEntity.ok()
+    return ResponseEntity.status(HttpStatus.CREATED)
         .body(CommonResponse.builder()
             .message("Essay saved successfully")
             .build());

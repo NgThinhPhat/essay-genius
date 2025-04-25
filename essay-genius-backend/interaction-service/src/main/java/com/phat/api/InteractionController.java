@@ -4,6 +4,7 @@ import com.phat.api.model.request.CreateCommentRequest;
 import com.phat.api.model.request.CreateReactionRequest;
 import com.phat.api.model.request.ListCommentRequest;
 import com.phat.api.model.request.ListReactionRequest;
+import com.phat.api.model.response.CommonResponse;
 import com.phat.app.service.InteractionService;
 import com.phat.domain.model.Comment;
 import com.phat.domain.model.Reaction;
@@ -30,7 +31,6 @@ import org.springframework.web.bind.annotation.*;
 import static lombok.AccessLevel.PRIVATE;
 
 @RestController
-@RequestMapping("/api")
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = PRIVATE)
 @Validated
@@ -39,12 +39,14 @@ public class InteractionController {
 
     @PostMapping("/comments")
     @ResponseStatus(HttpStatus.CREATED)
-    public Comment addComment(@Valid @RequestBody CreateCommentRequest createCommentRequest) {
-        return interactionService.addComment(
+    public ResponseEntity<CommonResponse> addComment(@Valid @RequestBody CreateCommentRequest createCommentRequest) {
+        interactionService.addComment(
                 createCommentRequest.essayId(),
                 createCommentRequest.content(),
                 createCommentRequest.parentId()
         );
+        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.builder()
+                .message("Comment added successfully").build());
     }
 
     @GetMapping("/comments")
@@ -55,12 +57,14 @@ public class InteractionController {
 
     @PostMapping("/reactions")
     @ResponseStatus(HttpStatus.CREATED)
-    public Reaction addReaction(@Valid @RequestBody CreateReactionRequest createReactionRequest) {
-        return interactionService.addReaction(
+    public ResponseEntity<CommonResponse> addReaction(@Valid @RequestBody CreateReactionRequest createReactionRequest) {
+        interactionService.addReaction(
                 createReactionRequest.targetId(),
                 createReactionRequest.targetType(),
                 createReactionRequest.type()
         );
+        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.builder()
+                .message("Reaction added successfully").build());
     }
 
     @GetMapping("/reactions")
