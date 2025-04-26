@@ -13,4 +13,7 @@ public interface CommentRepository extends MongoRepository<Comment, String> {
     Page<Comment> findByEssayIdAndParentId(String essayId, String parentId, Pageable pageable);
     Page<Comment> findByEssayId(String essayId, Pageable pageable);
     Page<Comment> findByEssayIdAndParentIdIsNull(String essayId, Pageable pageable);
+
+    int countByEssayIdAndParentId(String essayId, String parentId);
+    int countByEssayId(String essayId);
 }

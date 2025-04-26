@@ -1,4 +1,4 @@
-package com.phat.api.model;
+package com.phat.common.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

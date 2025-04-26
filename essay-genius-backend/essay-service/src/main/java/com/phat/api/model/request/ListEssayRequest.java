@@ -12,67 +12,74 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static com.phat.common.Utils.getCurrentUser;
+
 @Getter
 @Setter
 public class ListEssayRequest extends AbstractMongoPageableRequest<EssaySubmission> {
 
-    private String promptText;
+  private String promptText;
 
-    private Byte bandFrom;
-    private Byte bandTo;
+  private Double bandFrom;
+  private Double bandTo;
 
-    private Visibility visibility;
+  private Visibility visibility;
 
-    private String createdBy;
+  private String createdBy;
 
-    private Date createdAtFrom;
-    private Date createdAtTo;
+  private Date createdAtFrom;
+  private Date createdAtTo;
 
-    private Boolean isDeleted;
+  private Boolean isDeleted;
 
-    @Override
-    public Criteria toCriteria() {
-        List<Criteria> criteriaList = new ArrayList<>();
+  private Boolean ownByCurrentUser = false;
 
-        if (getIds() != null && getIds().length > 0) {
-            criteriaList.add(Criteria.where("id").in(Arrays.asList(getIds())));
-        }
+  @Override
+  public Criteria toCriteria() {
+    List<Criteria> criteriaList = new ArrayList<>();
 
-        if (StringUtils.hasText(promptText)) {
-            criteriaList.add(Criteria.where("promptText").regex(promptText, "i"));
-        }
-
-        if (bandFrom != null && bandTo != null) {
-            criteriaList.add(Criteria.where("band").gte(bandFrom).lte(bandTo));
-        } else if (bandFrom != null) {
-            criteriaList.add(Criteria.where("band").gte(bandFrom));
-        } else if (bandTo != null) {
-            criteriaList.add(Criteria.where("band").lte(bandTo));
-        }
-
-        if (visibility != null) {
-            criteriaList.add(Criteria.where("visibility").is(visibility));
-        }
-
-        if (StringUtils.hasText(createdBy)) {
-            criteriaList.add(Criteria.where("createdBy").is(createdBy));
-        }
-
-        if (createdAtFrom != null && createdAtTo != null) {
-            criteriaList.add(Criteria.where("createdAt").gte(createdAtFrom).lte(createdAtTo));
-        } else if (createdAtFrom != null) {
-            criteriaList.add(Criteria.where("createdAt").gte(createdAtFrom));
-        } else if (createdAtTo != null) {
-            criteriaList.add(Criteria.where("createdAt").lte(createdAtTo));
-        }
-
-        if (isDeleted != null) {
-            criteriaList.add(Criteria.where("isDeleted").is(isDeleted));
-        }
-
-        return criteriaList.isEmpty()
-                ? new Criteria()
-                : new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+    if (getIds() != null && getIds().length > 0) {
+      criteriaList.add(Criteria.where("id").in(Arrays.asList(getIds())));
     }
-}
 
+    if (StringUtils.hasText(promptText)) {
+      criteriaList.add(Criteria.where("promptText").regex(promptText, "i"));
+    }
+
+    if (bandFrom != null && bandTo != null) {
+      criteriaList.add(Criteria.where("band").gte(bandFrom).lte(bandTo));
+    } else if (bandFrom != null) {
+      criteriaList.add(Criteria.where("band").gte(bandFrom));
+    } else if (bandTo != null) {
+      criteriaList.add(Criteria.where("band").lte(bandTo));
+    }
+
+    if (visibility != null) {
+      criteriaList.add(Criteria.where("visibility").is(visibility));
+    }
+
+    if (StringUtils.hasText(createdBy)) {
+      criteriaList.add(Criteria.where("createdBy").is(createdBy));
+    }
+
+    if (createdAtFrom != null && createdAtTo != null) {
+      criteriaList.add(Criteria.where("createdAt").gte(createdAtFrom).lte(createdAtTo));
+    } else if (createdAtFrom != null) {
+      criteriaList.add(Criteria.where("createdAt").gte(createdAtFrom));
+    } else if (createdAtTo != null) {
+      criteriaList.add(Criteria.where("createdAt").lte(createdAtTo));
+    }
+
+    if (isDeleted != null) {
+      criteriaList.add(Criteria.where("isDeleted").is(isDeleted));
+    }
+
+    if (ownByCurrentUser != null && ownByCurrentUser) {
+      criteriaList.add(Criteria.where("createdBy").ne(getCurrentUser()));
+    }
+
+    return criteriaList.isEmpty()
+        ? new Criteria()
+        : new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+  }
+}

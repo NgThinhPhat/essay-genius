@@ -3,6 +3,7 @@ package com.phat.app.service;
 import com.phat.api.model.request.ListEssayRequest;
 import com.phat.api.model.response.EssayResponseWrapper;
 import com.phat.api.model.response.EssaySaveResponse;
+import com.phat.api.model.response.EssayScoredResponse;
 import com.phat.api.model.response.EssayTaskTwoScoreResponse;
 import com.phat.domain.enums.Visibility;
 import com.phat.domain.model.EssaySubmission;
@@ -15,6 +16,6 @@ public interface EssaySubmissionService {
 
     EssaySubmission findEssayById(String id) throws Exception;
 
-    Page<EssaySaveResponse> findAllEssays(ListEssayRequest listEssayRequest) throws Exception;
+    Page<EssayScoredResponse> findAllEssays(ListEssayRequest listEssayRequest) throws Exception;
 
 }

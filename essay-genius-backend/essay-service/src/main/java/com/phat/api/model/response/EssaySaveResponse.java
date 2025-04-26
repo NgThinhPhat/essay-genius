@@ -14,5 +14,5 @@ public class EssaySaveResponse {
     String promptText;
     EssayResponseWrapper<EssayTaskTwoScoreResponse> essayTaskTwoScoreResponse;
     String visibility;
-    byte band;
+    Double band;
 }

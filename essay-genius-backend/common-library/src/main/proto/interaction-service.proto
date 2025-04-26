@@ -5,4 +5,14 @@ package com.phat.grpc.interaction;
 option java_outer_classname = "proto";
 option java_multiple_files = true;
 
+message GetInteractionCountRequest {
+  string target_id = 1;
+}
 
+message GetInteractionCountResponse {
+  int32 reaction_count = 1;
+  int32 comment_count = 2;
+}
+service InteractionService {
+  rpc GetInteractionCount (GetInteractionCountRequest) returns (GetInteractionCountResponse);
+}

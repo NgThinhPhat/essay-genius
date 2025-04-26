@@ -22,8 +22,8 @@ export const pageableSchema = z.object({
   unpaged: z.boolean(),
 });
 
-export const pageableResponseSchema = z.object({
-  content: z.array(z.any()),
+export const pageableResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) => z.object({
+  content: z.array(itemSchema),
   pageable: pageableSchema,
   totalPages: z.number().int(),
   totalElements: z.number().int(),

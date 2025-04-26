@@ -1,6 +1,7 @@
 package com.phat.api;
 
 import com.phat.api.model.request.TopicsRequest;
+import com.phat.api.model.response.EssayScoredResponse;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import com.phat.api.model.request.EssaySaveRequest;
 import com.phat.api.model.request.EssayTaskTwoScoringRequest;
@@ -52,8 +53,8 @@ public class EssayController {
   @ResponseStatus(HttpStatus.CREATED)
   public ResponseEntity<CommonResponse> saveEssay(@Valid @RequestBody EssaySaveRequest essaySaveRequest)
       throws Exception {
-    essaySubmissionService.saveEssay(essaySaveRequest.getPromptText(),
-        essaySaveRequest.getEssayText(),
+    essaySubmissionService.saveEssay(essaySaveRequest.getEssayText(),
+        essaySaveRequest.getPromptText(),
         essaySaveRequest.getEssayTaskTwoScoreResponse(),
         Visibility.fromValue(essaySaveRequest.getVisibility()));
     return ResponseEntity.status(HttpStatus.CREATED)
@@ -87,9 +88,9 @@ public class EssayController {
             .build());
   }
 
-  @GetMapping
+  @GetMapping("/")
   @ResponseStatus(HttpStatus.OK)
-  public ResponseEntity<Page<EssaySaveResponse>> getAllEssays(@ModelAttribute ListEssayRequest listEssayRequest)
+  public ResponseEntity<Page<EssayScoredResponse>> getEssays(@ModelAttribute ListEssayRequest listEssayRequest)
       throws Exception {
     return ResponseEntity.ok(
         essaySubmissionService.findAllEssays(listEssayRequest));

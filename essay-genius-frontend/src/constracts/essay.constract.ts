@@ -1,3 +1,4 @@
+import { pageableRequestSchema, pageableResponseSchema } from '@/lib/schemas/page.schema';
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
 
@@ -79,16 +80,40 @@ export type CommonResponse = z.infer<typeof commonResponseSchema>;
 export const essaySaveResponseSchema = z.any();
 export type essaySaveResponseSchema = z.infer<typeof essaySaveResponseSchema>;
 
-export const pageEssaySaveResponseSchema = z.any();
-export type PageEssaySaveResponseSchema = z.infer<typeof pageEssaySaveResponseSchema>;
-
-export const listEssayRequestSchema = z.object({
-  page: z.number().int(),
-  size: z.number().int(),
-  sortFields: z.array(z.string()),
-  desc: z.array(z.boolean()),
+export const listEssayRequestSchema = pageableRequestSchema.extend({
+  promptText: z.string().optional(),
+  bandFrom: z.number().min(0).max(9).optional(),
+  bandTo: z.number().min(0).max(9).optional(),
+  visibility: z.enum(["PUBLIC", "PRIVATE", "FRIENDS"]).optional(),
+  createdBy: z.string().optional(),
+  createdAtFrom: z.string().datetime().optional(),
+  createdAtTo: z.string().datetime().optional(),
+  isDeleted: z.boolean().optional(),
+  ownByCurrentUser: z.boolean().optional(),
 });
 export type ListEssayRequest = z.infer<typeof listEssayRequestSchema>;
+
+export const userInfoSchema = z.object({
+  id: z.string(),
+  email: z.string().email(),
+  firstName: z.string(),
+  lastName: z.string(),
+  avatar: z.string().nullable().optional(), // nếu có thể null
+});
+export const essayScoredResponseSchema = z.object({
+  id: z.string(),
+  user: userInfoSchema,
+  essayText: z.string(),
+  promptText: z.string(),
+  band: z.number(),
+  createdAt: z.string(), // hoặc z.date() nếu bạn parse thành Date
+  stars: z.number(),
+  comments: z.number(),
+});
+export type EssayScoredResponse = z.infer<typeof essayScoredResponseSchema>;
+
+export const listEssayResponseSchema = pageableResponseSchema(essayScoredResponseSchema);
+export type ListEssayResponse = z.infer<typeof listEssayResponseSchema>;
 
 export const generateEssayPromptRequestSchema = z.object({
   topics: z.array(z.string()),
@@ -121,12 +146,12 @@ export const essayContract = c.router({
       200: essayResponseWrapperStringSchema,
     },
   },
-  getAllessay: {
+  getEssays: {
     method: 'GET',
-    path: '/essay',
+    path: '/essay/',
     query: listEssayRequestSchema,
     responses: {
-      200: pageEssaySaveResponseSchema,
+      200: listEssayResponseSchema,
     },
   },
   hello: {

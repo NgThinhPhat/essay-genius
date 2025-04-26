@@ -12,4 +12,8 @@ public interface ReactionRepository extends MongoRepository<Reaction, String> {
     List<Reaction> findByTargetId(String essayId, String commentId);
 
     List<Reaction> findByTargetIdAndTargetType(String targetId, TargetType targetType);
+
+    int countByTargetId(String targetId);
+
+    int countByTargetIdAndTargetType(String targetId, TargetType targetType);
 }

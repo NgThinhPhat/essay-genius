@@ -6,7 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum AppErrorCode {
-
     // Validation Errors
     VALIDATION_ERROR("auth/validation-error", "validation_error"),
     INVALID_EMAIL("auth/invalid-email", "invalid_email"),
@@ -47,6 +46,8 @@ public enum AppErrorCode {
     RATE_LIMIT_EXCEEDED("auth/rate-limit-exceeded", "rate_limit_exceeded"),
     // gRPC Errors
     CONNECTION_REFUSED("grpc/connection-refused", "connection_refused"),
+
+    GET_USER_INFO_FAILED("identity/get-user-info-failed", "get_user_info_failed"),
     ;
 
     private final String code;

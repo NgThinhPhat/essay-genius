@@ -1,7 +1,6 @@
 package com.phat.api.model.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.phat.api.model.UserInfo;
+import com.phat.common.response.UserInfo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

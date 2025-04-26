@@ -39,7 +39,7 @@ public class MockServiceImpl implements MockService {
             EssaySubmission submission = EssaySubmission.builder()
                     .promptText("Describe an important event in your life " + i)
                     .essayText("This is the essay content number " + i)
-                    .band((byte)Math.floor(randomScores.getOverallBand()))
+                    .band(Math.floor(randomScores.getOverallBand()))
                     .essayTaskTwoScoreResponse(scoreWrapper)
                     .build();
 
@@ -82,7 +82,9 @@ public class MockServiceImpl implements MockService {
     }
 
     private EssayTaskTwoScoreResponse.ScoreDetail randomScoreDetail(String explanationPrefix) {
-        int band = 5 + random.nextInt(4); // 5 to 8
+        Random random = new Random();
+        double band = 5.0 + (random.nextInt(9)); // 0 -> 8  →  0*0.5 + 5.0 = 5.0  đến  8*0.5 + 5.0 = 9.0
+        band = 5.0 + (random.nextInt(9)) * 0.5; // 5 to 8
         return new EssayTaskTwoScoreResponse.ScoreDetail(band, explanationPrefix + " explanation.");
     }
 }

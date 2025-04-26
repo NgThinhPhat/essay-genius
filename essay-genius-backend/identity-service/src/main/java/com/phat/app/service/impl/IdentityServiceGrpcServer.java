@@ -2,10 +2,12 @@ package com.phat.app.service.impl;
 
 import java.text.ParseException;
 import com.nimbusds.jose.JOSEException;
+import com.phat.api.mapper.UserMapper;
 import com.phat.app.service.AuthService;
-import com.phat.grpc.identity.IdentityServiceGrpc;
-import com.phat.grpc.identity.IntrospectRequest;
-import com.phat.grpc.identity.IntrospectResponse;
+import com.phat.app.service.UserService;
+import com.phat.common.response.UserInfo;
+import com.phat.domain.model.User;
+import com.phat.grpc.identity.*;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,34 +21,48 @@ import static com.phat.app.helper.Constants.MICROSERVICE_NAME;
 public class IdentityServiceGrpcServer extends IdentityServiceGrpc.IdentityServiceImplBase {
 
     private final AuthService authService;
+    private final UserService userService;
 
     @Override
     public void introspect(IntrospectRequest request,
                            StreamObserver<IntrospectResponse> responseObserver) {
-        // Get the token from the request
         String token = request.getToken();
 
-        // Initialize response builder
         IntrospectResponse.Builder responseBuilder = IntrospectResponse.newBuilder();
 
         try {
-            // Call the introspect method to validate the token
             boolean isValid = authService.introspect(token);
 
-            // Set the response according to the token validation result
             responseBuilder.setValid(isValid);
+            responseObserver.onNext(responseBuilder.build());
+            responseObserver.onCompleted();
 
         } catch (JOSEException | ParseException e) {
-            // Handle possible exceptions (optional: log the error)
             responseObserver.onError(io.grpc.Status.INTERNAL
                     .withDescription(String.format("[%s]: Token parsing or validation error: %s", MICROSERVICE_NAME, e.getMessage()))
                     .asRuntimeException());
+        }
+    }
+    @Override
+    public void getUserInfo(GetUserInfoRequest request,
+                                StreamObserver<GetUserInfoResponse> responseObserver) {
+
+        GetUserInfoResponse.Builder responseBuilder = GetUserInfoResponse.newBuilder();
+        try {
+            User user = userService.findById(request.getUserId());
+            responseBuilder.setUserId(user.getId());
+            responseBuilder.setEmail(user.getEmail());
+            responseBuilder.setFirstName(user.getFirstName());
+            responseBuilder.setLastName(user.getLastName());
+            responseBuilder.setAvatar("");
+            responseObserver.onNext(responseBuilder.build());
+            responseObserver.onCompleted();
+
+        } catch (Exception e) {
+            responseObserver.onError(io.grpc.Status.INTERNAL
+                    .withDescription(String.format("[%s]: Get user information error: %s", MICROSERVICE_NAME, e.getMessage()))
+                    .asRuntimeException());
             return;
         }
-
-        // Send the response
-        responseObserver.onNext(responseBuilder.build());
-        responseObserver.onCompleted();
     }
-
 }

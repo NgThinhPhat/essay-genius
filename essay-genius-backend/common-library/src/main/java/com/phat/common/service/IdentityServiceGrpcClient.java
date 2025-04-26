@@ -2,12 +2,12 @@ package com.phat.common.service;
 
 import com.phat.common.exception.AppErrorCode;
 import com.phat.common.exception.AppException;
-import com.phat.grpc.identity.IdentityServiceGrpc;
-import com.phat.grpc.identity.IntrospectRequest;
-import com.phat.grpc.identity.IntrospectResponse;
+import com.phat.common.response.UserInfo;
+import com.phat.grpc.identity.*;
 import io.grpc.Status;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -32,7 +32,27 @@ public class IdentityServiceGrpcClient {
             return response;
         } catch (Exception e) {
             log.info("[{}]: Error occurred while introspecting token: {}", "COMMON-SERVICE", e.getMessage());
-            throw new AppException(AppErrorCode.INTROSPECT_FAILED, Status.UNAUTHENTICATED, "Token introspection failed");
+            throw new AppException(AppErrorCode.INTROSPECT_FAILED, Status.UNAUTHENTICATED, e.getLocalizedMessage());
+        }
+    }
+
+    public UserInfo getUserInfo(String userId) {
+        try {
+            GetUserInfoResponse response = identityServiceClient
+                    .getUserInfo(GetUserInfoRequest.newBuilder()
+                            .setUserId(userId)
+                            .build());
+
+            return UserInfo.builder()
+                    .id(response.getUserId())
+                    .firstName(response.getFirstName())
+                    .lastName(response.getLastName())
+                    .avatar(response.getAvatar())
+                    .email(response.getEmail())
+                    .build();
+        } catch (Exception e) {
+            log.info("[{}]: Error occurred while getting user info: {}", "COMMON-SERVICE", e.getMessage());
+            throw new AppException(AppErrorCode.GET_USER_INFO_FAILED, Status.UNAUTHENTICATED, e.getLocalizedMessage());
         }
     }
 

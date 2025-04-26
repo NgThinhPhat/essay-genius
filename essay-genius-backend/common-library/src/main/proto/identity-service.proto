@@ -27,8 +27,19 @@ message IntrospectResponse {
   bool valid = 1;
 }
 
+message GetUserInfoRequest {
+  string user_id = 1;
+}
+message GetUserInfoResponse {
+  string user_id = 1;
+  string firstName = 2;
+  string lastName = 3;
+  string avatar = 4;
+  string email = 5;
+}
 service IdentityService {
   rpc introspect(IntrospectRequest) returns (IntrospectResponse) {}
   rpc GetCurrentUser (GetCurrentUserRequest) returns (GetCurrentUserResponse);
   rpc GetCurrentUserId (GetCurrentUserRequest) returns (GetCurrentUserResponse);
+  rpc GetUserInfo (GetUserInfoRequest) returns (GetUserInfoResponse);
 }

@@ -38,7 +38,7 @@ public class EssayTaskTwoScoreResponse {
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ScoreDetail {
-        private int band;
+        private Double band;
         private String explanation;
     }
 

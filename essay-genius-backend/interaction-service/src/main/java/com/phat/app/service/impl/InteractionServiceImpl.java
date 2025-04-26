@@ -2,6 +2,7 @@ package com.phat.app.service.impl;
 
 import com.phat.api.model.request.ListCommentRequest;
 import com.phat.api.model.request.ListReactionRequest;
+import com.phat.common.response.InteractionCountResponse;
 import com.phat.app.service.InteractionService;
 import com.phat.domain.irepository.CommentRepository;
 import com.phat.domain.irepository.ReactionRepository;
@@ -18,10 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,20 +78,20 @@ public class InteractionServiceImpl implements InteractionService {
     }
 
     public Page<Comment> findAllComments(ListCommentRequest request) {
+        Query baseQuery = new Query(request.toCriteria());
+        long total = mongoTemplate.count(baseQuery, Comment.class);
+
         Query query = new Query(request.toCriteria()).with(request.toPageable());
-
-        long total = mongoTemplate.count(query, Comment.class);
-
         List<Comment> comments = mongoTemplate.find(query, Comment.class);
 
         return new PageImpl<>(comments, request.toPageable(), total);
     }
 
     public Page<Reaction> findAllReactions(ListReactionRequest request) {
+        Query baseQuery = new Query(request.toCriteria());
+        long total = mongoTemplate.count(baseQuery, Reaction.class);
+
         Query query = new Query(request.toCriteria()).with(request.toPageable());
-
-        long total = mongoTemplate.count(query, Reaction.class);
-
         List<Reaction> reactions = mongoTemplate.find(query, Reaction.class);
 
         return new PageImpl<>(reactions, request.toPageable(), total);
@@ -112,4 +110,15 @@ public class InteractionServiceImpl implements InteractionService {
                 .orElseThrow(() -> new IllegalArgumentException("Reaction not found"));
         reactionRepository.delete(reaction);
     }
+
+    @Override
+    public InteractionCountResponse getInteractionCount(String targetId) {
+        int reactionCount = reactionRepository.countByTargetId(targetId);
+        int commentCount = commentRepository.countByEssayId(targetId);
+        InteractionCountResponse interactionCountResponse = InteractionCountResponse.builder()
+                .commentCount(commentCount).reactionCount(reactionCount).build();
+
+        return interactionCountResponse;
+    }
+
 }

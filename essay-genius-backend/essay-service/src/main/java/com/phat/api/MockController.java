@@ -24,7 +24,7 @@ public class MockController {
     @PostMapping("/test")
     public String mock() {
         mockService.mock();
-        return "Mock endpoint is working!";
+        return "Mock data succeed!";
     }
 
     @PostMapping("/clear")

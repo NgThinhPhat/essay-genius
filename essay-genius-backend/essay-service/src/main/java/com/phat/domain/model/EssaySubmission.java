@@ -30,7 +30,7 @@ public class EssaySubmission extends AbstractEntity {
     @Indexed
     @Min(0)
     @Max(9)
-    byte band;
+    Double band;
     @Builder.Default
     @NotNull
     Visibility visibility = Visibility.PUBLIC;

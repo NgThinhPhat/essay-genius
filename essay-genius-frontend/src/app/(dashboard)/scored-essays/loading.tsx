@@ -1,4 +1,6 @@
 export default function Loading() {
-  return null
+  return (
+    <div className="text-center py-8">Loading essays...</div>
+  );
 }
 
