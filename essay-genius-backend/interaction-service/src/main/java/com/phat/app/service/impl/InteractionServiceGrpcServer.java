@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 
+
 @GrpcService
 @RequiredArgsConstructor
 @Slf4j
@@ -17,11 +18,18 @@ public class InteractionServiceGrpcServer extends InteractionServiceGrpc.Interac
     @Override
     public void getInteractionCount(GetInteractionCountRequest request, StreamObserver<GetInteractionCountResponse> responseObserver) {
         try{
-            InteractionCountResponse interactionCountResponse = interactionService.getInteractionCount(request.getTargetId());
+            com.phat.common.response.ReactedInfo reactedInfo = interactionService.isUserReacted(request.getTargetId(), request.getCurrentUserId());
+
+            ReactedInfo.Builder builder = ReactedInfo.newBuilder().setIsReacted(reactedInfo.isReacted());
+            if (reactedInfo.isReacted()){
+                builder.setReactionType(reactedInfo.reactionType());
+                builder.setReactionId(reactedInfo.reactionId());
+            }
 
             GetInteractionCountResponse response = GetInteractionCountResponse.newBuilder()
-                    .setReactionCount(interactionCountResponse.reactionCount())
-                    .setCommentCount(interactionCountResponse.commentCount())
+                    .setReactionCount(interactionService.getReactionCount(request.getTargetId()))
+                    .setCommentCount(interactionService.getCommentCount(request.getTargetId()))
+                    .setReactedInfo(builder)
                     .build();
 
             responseObserver.onNext(response);

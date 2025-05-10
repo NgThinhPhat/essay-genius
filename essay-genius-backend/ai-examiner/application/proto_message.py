@@ -13,3 +13,5 @@ GenerateEssayPromptRequest = sym_db.GetSymbol(
 GenerateEssayPromptResponse = sym_db.GetSymbol(
     "com.phat.grpc.ai.GenerateEssayPromptResponse"
 )
+ToxicCheckerRequest = sym_db.GetSymbol("com.phat.grpc.ai.ToxicCheckerRequest")
+ToxicCheckerResponse = sym_db.GetSymbol("com.phat.grpc.ai.ToxicCheckerResponse")

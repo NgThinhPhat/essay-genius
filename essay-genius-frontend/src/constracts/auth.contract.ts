@@ -1,19 +1,27 @@
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
+import { userInfoSchema } from './essay.constract';
 
 const c = initContract();
 
 export const authContract = c.router({
   hello: {
     method: 'GET',
-    path: '/auth',
+    path: '',
     responses: {
       200: z.string()
     }
   },
+  getCurrentUser: {
+    method: 'GET',
+    path: '/identity/current-user',
+    responses: {
+      200: userInfoSchema
+    }
+  },
   signIn: {
     method: 'POST',
-    path: '/identity/auth/sign-in',
+    path: '/identity/sign-in',
     body: z.object({
       email: z.string(),
       password: z.string()
@@ -27,7 +35,7 @@ export const authContract = c.router({
   },
   signUp: {
     method: 'POST',
-    path: '/auth/sign-up',
+    path: '/sign-up',
     body: z.object({
       email: z.string(),
       firstName: z.string().min(2).max(20),
@@ -43,7 +51,7 @@ export const authContract = c.router({
   },
   signOut: {
     method: 'POST',
-    path: '/auth/sign-out',
+    path: '/sign-out',
     body: z.object({
       refreshToken: z.string()
     }),
@@ -53,7 +61,7 @@ export const authContract = c.router({
   },
   refreshToken: {
     method: 'POST',
-    path: '/identity/auth/refresh-token',
+    path: '/identity/refresh-token',
     body: z.object({
       refreshToken: z.string()
     }),
@@ -66,7 +74,7 @@ export const authContract = c.router({
   },
   verifyEmailByCode: {
     method: 'POST',
-    path: '/auth/verify-email-by-code',
+    path: '/verify-email-by-code',
     body: z.object({
       email: z.string(),
       code: z.string().length(6)
@@ -79,7 +87,7 @@ export const authContract = c.router({
   },
   verifyEmailByToken: {
     method: 'GET',
-    path: '/auth/verify-email-by-token',
+    path: '/verify-email-by-token',
     query: z.object({
       token: z.string()
     }),
@@ -91,7 +99,7 @@ export const authContract = c.router({
   },
   sendForgotPassword: {
     method: 'POST',
-    path: '/auth/send-forgot-password',
+    path: '/send-forgot-password',
     body: z.object({
       email: z.string()
     }),
@@ -103,7 +111,7 @@ export const authContract = c.router({
   },
   forgotPassword: {
     method: 'POST',
-    path: '/auth/forgot-password',
+    path: '/forgot-password',
     body: z.object({
       email: z.string(),
       code: z.string(),
@@ -118,7 +126,7 @@ export const authContract = c.router({
   },
   resetPassword: {
     method: 'POST',
-    path: '/auth/reset-password',
+    path: '/reset-password',
     body: z.object({
       newPassword: z.string(),
       oldPassword: z.string()
@@ -131,7 +139,7 @@ export const authContract = c.router({
   },
   sendEmailVerification: {
     method: 'POST',
-    path: '/auth/send-email-verification',
+    path: '/send-email-verification',
     body: z.object({
       email: z.string()
     }),
@@ -143,7 +151,7 @@ export const authContract = c.router({
   },
   introspect: {
     method: 'POST',
-    path: '/auth/introspect',
+    path: '/introspect',
     body: z.object({
       token: z.string()
     }),

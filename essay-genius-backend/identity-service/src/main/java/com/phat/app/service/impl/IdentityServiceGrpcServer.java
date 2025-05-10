@@ -4,6 +4,7 @@ import java.text.ParseException;
 import com.nimbusds.jose.JOSEException;
 import com.phat.api.mapper.UserMapper;
 import com.phat.app.service.AuthService;
+import com.phat.app.service.MinioClientService;
 import com.phat.app.service.UserService;
 import com.phat.common.response.UserInfo;
 import com.phat.domain.model.User;
@@ -22,6 +23,7 @@ public class IdentityServiceGrpcServer extends IdentityServiceGrpc.IdentityServi
 
     private final AuthService authService;
     private final UserService userService;
+    private final MinioClientService minioClientService;
 
     @Override
     public void introspect(IntrospectRequest request,
@@ -54,7 +56,15 @@ public class IdentityServiceGrpcServer extends IdentityServiceGrpc.IdentityServi
             responseBuilder.setEmail(user.getEmail());
             responseBuilder.setFirstName(user.getFirstName());
             responseBuilder.setLastName(user.getLastName());
-            responseBuilder.setAvatar("");
+
+            String url = minioClientService.getObjectUrl("default-avatar-url.png" , "user-avatars");
+            try {
+                url = minioClientService.getObjectUrl(user.getAvatar(), "user-avatars");
+                log.debug("Avatar URL retrieved: {}", url);
+            } catch (Exception e) {
+                log.error("Error when retrieving avatar URL for user: {}", user.getEmail(), e);
+            }
+            responseBuilder.setAvatar(url);
             responseObserver.onNext(responseBuilder.build());
             responseObserver.onCompleted();
 

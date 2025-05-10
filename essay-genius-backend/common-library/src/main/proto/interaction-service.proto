@@ -7,11 +7,19 @@ option java_multiple_files = true;
 
 message GetInteractionCountRequest {
   string target_id = 1;
+  string current_user_id = 2;
+}
+
+message ReactedInfo {
+  bool is_reacted = 1;
+  string reaction_id = 2;
+  string reaction_type = 3;
 }
 
 message GetInteractionCountResponse {
-  int32 reaction_count = 1;
-  int32 comment_count = 2;
+  int64 reaction_count = 1;
+  int64 comment_count = 2;
+  ReactedInfo reacted_info = 3;
 }
 service InteractionService {
   rpc GetInteractionCount (GetInteractionCountRequest) returns (GetInteractionCountResponse);

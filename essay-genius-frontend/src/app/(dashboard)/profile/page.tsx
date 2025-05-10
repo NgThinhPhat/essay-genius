@@ -177,7 +177,7 @@ export default function Profile() {
         <Card className="md:col-span-1 h-fit">
           <CardContent className="p-4 space-y-4">
             <div className="flex items-center space-x-3">
-              <Avatar className="h-12 w-12">
+              <Avatar style={{ width: "150px", height: "200px" }}>
                 <AvatarImage src="/placeholder.svg?height=48&width=48" alt="Profile" />
                 <AvatarFallback>JD</AvatarFallback>
               </Avatar>

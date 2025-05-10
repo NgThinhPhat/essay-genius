@@ -19,6 +19,10 @@ grpc:
       address: static://localhost:9083
       negotiationType: plaintext
 
+    ai-service:
+      address: static://localhost:9081
+      negotiationType: plaintext
+
 jwt:
   accessSignerKey: ${accessSignerKey}
   refreshSignerKey: ${refreshSignerKey}
@@ -76,4 +80,4 @@ openapi:
 
 gateway:
   domain: ${GATEWAY_DOMAIN:localhost}
-  port: ${GATEWAY_PORT:9000}
+  port: ${GATEWAY_PORT:9050}

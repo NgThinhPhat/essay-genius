@@ -1,5 +1,6 @@
 package com.phat.api.model.response;
 
+import com.phat.common.response.ReactedInfo;
 import com.phat.common.response.UserInfo;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -19,6 +20,7 @@ public class EssayScoredResponse {
   String promptText;
   Double band;
   Date createdAt;
-  int stars;
-  int comments;
+  long stars;
+  long comments;
+  ReactedInfo reactedInfo;
 }

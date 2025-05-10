@@ -1,13 +1,14 @@
 package com.phat.api;
 
-import com.phat.api.model.request.CreateCommentRequest;
-import com.phat.api.model.request.CreateReactionRequest;
-import com.phat.api.model.request.ListCommentRequest;
-import com.phat.api.model.request.ListReactionRequest;
+import com.phat.api.model.request.*;
+import com.phat.api.model.response.CommentResponse;
 import com.phat.api.model.response.CommonResponse;
+import com.phat.api.model.response.ReactionResponse;
+import com.phat.api.model.response.ToxicCheckerResponse;
 import com.phat.app.service.InteractionService;
 import com.phat.domain.model.Comment;
 import com.phat.domain.model.Reaction;
+import com.phat.domain.model.ReactionType;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -30,36 +31,35 @@ public class InteractionController {
     @PostMapping("/comments")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CommonResponse> addComment(@Valid @RequestBody CreateCommentRequest createCommentRequest) {
-        interactionService.addComment(
+        ToxicCheckerResponse toxicCheckerResponse = interactionService.addComment(
                 createCommentRequest.essayId(),
                 createCommentRequest.content(),
                 createCommentRequest.parentId()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.builder()
-                .message("Comment added successfully").build());
+                        .results(toxicCheckerResponse)
+                .message(toxicCheckerResponse.valid() ? "Comment added successfully" : "Comment Failed").build());
     }
 
     @GetMapping("/comments")
     @ResponseStatus(HttpStatus.OK)
-    public Page<Comment> getComments(@ModelAttribute ListCommentRequest listCommentRequest) {
+    public Page<CommentResponse> getComments(@ModelAttribute ListCommentRequest listCommentRequest) {
         return interactionService.findAllComments(listCommentRequest);
     }
 
     @PostMapping("/reactions")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<CommonResponse> addReaction(@Valid @RequestBody CreateReactionRequest createReactionRequest) {
-        interactionService.addReaction(
+    public ResponseEntity<Reaction> addReaction(@Valid @RequestBody CreateReactionRequest createReactionRequest) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(interactionService.addReaction(
                 createReactionRequest.targetId(),
                 createReactionRequest.targetType(),
                 createReactionRequest.type()
-        );
-        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.builder()
-                .message("Reaction added successfully").build());
+        ));
     }
 
     @GetMapping("/reactions")
     @ResponseStatus(HttpStatus.OK)
-    public Page<Reaction> getReactions(@ModelAttribute ListReactionRequest listReactionRequest) {
+    public Page<ReactionResponse> getReactions(@ModelAttribute ListReactionRequest listReactionRequest) {
         return interactionService.findAllReactions(listReactionRequest);
     }
 
@@ -71,7 +71,15 @@ public class InteractionController {
 
     @DeleteMapping("/reactions/{reactionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteReaction(@PathVariable String reactionId) {
+    public ResponseEntity<CommonResponse> deleteReaction(@PathVariable String reactionId) {
         interactionService.deleteReaction(reactionId);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.builder()
+                .message("Reaction deleted successfully").build());
+    }
+
+    @GetMapping("/reactions/count")
+    @ResponseStatus(HttpStatus.OK)
+    public long getReactionCount(@ModelAttribute GetReactionCountRequest getReactionCountRequest) {
+        return interactionService.getReactionCountByTargetIdAndType(getReactionCountRequest.targetId(), ReactionType.valueOf(getReactionCountRequest.reactionType().toUpperCase()));
     }
 }

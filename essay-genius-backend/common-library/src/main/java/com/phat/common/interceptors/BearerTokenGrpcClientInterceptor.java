@@ -1,20 +1,19 @@
 package com.phat.common.interceptors;
 
 import com.phat.common.Constants;
+import com.phat.common.configs.ServiceProperties;
 import io.grpc.*;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.devh.boot.grpc.client.interceptor.GrpcGlobalClientInterceptor;
 
-import static com.phat.common.Constants.AUTHORIZATION_KEY;
+import static com.phat.common.Constants.*;
 import static com.phat.common.Utils.convertToUpperHyphen;
-
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class BearerTokenGrpcClientInterceptor implements ClientInterceptor {
 
-    protected final String microserviceName;
-
-    protected final String bearerToken;
+    private final ServiceProperties serviceProperties;
 
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
@@ -22,30 +21,18 @@ public class BearerTokenGrpcClientInterceptor implements ClientInterceptor {
             CallOptions callOptions,
             Channel next) {
 
-        String[] methodNameRaw = method.getFullMethodName().split("\\.");
-        String methodName = methodNameRaw[methodNameRaw.length - 1];
-        log.info("[{}] -> [{}]: {}", microserviceName, convertToUpperHyphen(methodName.split("/")[0]), methodName);
+        String methodName = method.getFullMethodName();
+        log.info("[{}] → {}", serviceProperties.getName(), methodName);
 
-        return new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
-
+        return new ForwardingClientCall.SimpleForwardingClientCall<>(next.newCall(method, callOptions)) {
             @Override
             public void start(Listener<RespT> responseListener, Metadata headers) {
-                // Lấy token từ Context hoặc ThreadLocal
-                String token = (Constants.GRPC_AUTHORIZATION_CONTEXT.get() != null)
-                        ? Constants.GRPC_AUTHORIZATION_CONTEXT.get() : Constants.REST_AUTHORIZATION_CONTEXT.get();
-
-                log.info("[{}]: Bearer Token from grpc interceptor: {}", microserviceName, bearerToken);
-                // Thêm token vào header của outgoing gRPC request nếu token tồn tại
-                if (bearerToken != null) headers.put(AUTHORIZATION_KEY, bearerToken);
-
+                String token = GRPC_AUTHORIZATION_CONTEXT.get();
+                if (token != null) {
+                    headers.put(AUTHORIZATION_KEY, token);
+                }
                 super.start(responseListener, headers);
-            }
-
-            @Override
-            public void sendMessage(ReqT message) {
-                super.sendMessage(message);
             }
         };
     }
-
 }

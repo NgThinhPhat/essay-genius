@@ -56,7 +56,7 @@ public class EssayController {
     essaySubmissionService.saveEssay(essaySaveRequest.getEssayText(),
         essaySaveRequest.getPromptText(),
         essaySaveRequest.getEssayTaskTwoScoreResponse(),
-        Visibility.fromValue(essaySaveRequest.getVisibility()));
+        Visibility.fromValue(essaySaveRequest.getVisibility().toLowerCase()));
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(CommonResponse.builder()
             .message("Essay saved successfully")

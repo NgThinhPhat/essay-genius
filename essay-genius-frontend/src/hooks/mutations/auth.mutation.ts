@@ -17,7 +17,6 @@ import {
   VerifyEmailByCodeResponseSchema,
   SendEmailForgotPasswordBodySchema,
   ForgotPasswordErrorResponseSchema,
-  forgotPasswordResponseSchema,
   ForgotPasswordResponseSchema,
   ResetPasswordResponseSchema,
   ResetPasswordErrorResponseSchema,

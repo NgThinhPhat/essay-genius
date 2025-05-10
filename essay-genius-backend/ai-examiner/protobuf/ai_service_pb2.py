@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10\x61i-service.proto\x12\x10\x63om.phat.grpc.ai\x1a\x1bgoogle/protobuf/empty.proto\":\n\x0eScoringRequest\x12\x14\n\x0c\x65ssay_prompt\x18\x01 \x01(\t\x12\x12\n\nessay_text\x18\x02 \x01(\t\"0\n\x0fScoringResponse\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x0e\n\x06result\x18\x02 \x01(\t\",\n\x1aGenerateEssayPromptRequest\x12\x0e\n\x06topics\x18\x01 \x03(\t\"<\n\x1bGenerateEssayPromptResponse\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x0e\n\x06result\x18\x02 \x01(\t2\xcf\x01\n\tAIService\x12N\n\x07Scoring\x12 .com.phat.grpc.ai.ScoringRequest\x1a!.com.phat.grpc.ai.ScoringResponse\x12r\n\x13GenerateEssayPrompt\x12,.com.phat.grpc.ai.GenerateEssayPromptRequest\x1a-.com.phat.grpc.ai.GenerateEssayPromptResponseB\tB\x05protoP\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10\x61i-service.proto\x12\x10\x63om.phat.grpc.ai\x1a\x1bgoogle/protobuf/empty.proto\":\n\x0eScoringRequest\x12\x14\n\x0c\x65ssay_prompt\x18\x01 \x01(\t\x12\x12\n\nessay_text\x18\x02 \x01(\t\"0\n\x0fScoringResponse\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x0e\n\x06result\x18\x02 \x01(\t\",\n\x1aGenerateEssayPromptRequest\x12\x0e\n\x06topics\x18\x01 \x03(\t\"<\n\x1bGenerateEssayPromptResponse\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x0e\n\x06result\x18\x02 \x01(\t\"\'\n\x13ToxicCheckerRequest\x12\x10\n\x08sentence\x18\x01 \x01(\t\"5\n\x14ToxicCheckerResponse\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x0e\n\x06result\x18\x02 \x01(\t2\xae\x02\n\tAIService\x12N\n\x07Scoring\x12 .com.phat.grpc.ai.ScoringRequest\x1a!.com.phat.grpc.ai.ScoringResponse\x12r\n\x13GenerateEssayPrompt\x12,.com.phat.grpc.ai.GenerateEssayPromptRequest\x1a-.com.phat.grpc.ai.GenerateEssayPromptResponse\x12]\n\x0cToxicChecker\x12%.com.phat.grpc.ai.ToxicCheckerRequest\x1a&.com.phat.grpc.ai.ToxicCheckerResponseB\tB\x05protoP\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -41,6 +41,10 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_GENERATEESSAYPROMPTREQUEST']._serialized_end=221
   _globals['_GENERATEESSAYPROMPTRESPONSE']._serialized_start=223
   _globals['_GENERATEESSAYPROMPTRESPONSE']._serialized_end=283
-  _globals['_AISERVICE']._serialized_start=286
-  _globals['_AISERVICE']._serialized_end=493
+  _globals['_TOXICCHECKERREQUEST']._serialized_start=285
+  _globals['_TOXICCHECKERREQUEST']._serialized_end=324
+  _globals['_TOXICCHECKERRESPONSE']._serialized_start=326
+  _globals['_TOXICCHECKERRESPONSE']._serialized_end=379
+  _globals['_AISERVICE']._serialized_start=382
+  _globals['_AISERVICE']._serialized_end=684
 # @@protoc_insertion_point(module_scope)

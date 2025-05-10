@@ -18,5 +18,4 @@ import lombok.AccessLevel;
 public class SignInResponse {
     private String accessToken;
     private String refreshToken;
-    UserInfo user;
 }

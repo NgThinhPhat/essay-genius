@@ -19,7 +19,7 @@ import java.util.Objects;
 
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
-@Component
+@Component("customJwtDecoder")
 @RequiredArgsConstructor
 @Slf4j
 public class CustomJwtDecoder implements JwtDecoder {

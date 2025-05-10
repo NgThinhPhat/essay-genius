@@ -102,6 +102,13 @@ springdoc:
     path: /swagger-ui
   show-actuator: true
 
+minio:
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket-name: essay-genius-bucket
+  temp-bucket-name: essay-genius-temp-bucket
+
 openapi:
   service:
     api-docs: identity-service-rest-api
@@ -113,4 +120,4 @@ openapi:
 
 gateway:
   domain: ${GATEWAY_DOMAIN:localhost}
-  port: ${GATEWAY_PORT:9000}
+  port: ${GATEWAY_PORT:9050}

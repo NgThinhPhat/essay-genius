@@ -3,6 +3,7 @@ package com.phat.api.icontroller;
 import com.phat.api.model.request.*;
 import com.phat.api.model.response.*;
 import com.nimbusds.jose.JOSEException;
+import com.phat.common.response.UserInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -12,9 +13,17 @@ import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 
-@RequestMapping("/auth")
 public interface IAuthController {
 
+    @GetMapping("current-user")
+    @Operation(
+            summary = "Get current user",
+            description = "Get current user information",
+            hidden = false,
+            deprecated = false
+    )
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<UserInfo> getCurrentUser();
     @GetMapping
     public String hello();
     @Operation(

@@ -7,6 +7,7 @@ import com.phat.api.model.response.*;
 import com.phat.app.exception.AppException;
 import com.phat.app.service.AuthService;
 import com.phat.app.service.UserService;
+import com.phat.common.response.UserInfo;
 import com.phat.domain.model.User;
 import com.nimbusds.jose.JOSEException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,9 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.ParseException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
 
 import static com.phat.app.exception.AppErrorCode.INVALID_SIGNATURE;
 import static com.phat.common.components.Translator.getLocalizedMessage;
@@ -37,6 +35,12 @@ public class AuthController implements IAuthController {
   AuthService authService;
   UserMapper userMapper;
   UserService userService;
+
+  @Override
+  public ResponseEntity<UserInfo> getCurrentUser() {
+    User user = userService.getCurrentUserInfo();
+    return ResponseEntity.status(HttpStatus.OK).body(userMapper.toUserInfo(user));
+  }
 
   @Override
   public String hello() {
@@ -63,7 +67,7 @@ public class AuthController implements IAuthController {
         SignInResponse.builder()
             .accessToken(accessToken)
             .refreshToken(refreshToken)
-            .user(userMapper.toUserInfo(signInUser)).build());
+            .build());
   }
 
   @Override
@@ -116,18 +120,12 @@ public class AuthController implements IAuthController {
   public ResponseEntity<RefreshTokenResponse> refreshToken(@RequestBody @Valid RefreshTokenRequest refreshTokenRequest,
       HttpServletRequest httpServletRequest) {
 
-    String newAccessToken;
     try {
-      newAccessToken = authService.refresh(refreshTokenRequest.refreshToken(), httpServletRequest);
-
+      RefreshTokenResponse refreshTokenResponse = authService.refresh(refreshTokenRequest.refreshToken(), httpServletRequest);
+      return ResponseEntity.status(HttpStatus.OK).body((refreshTokenResponse));
     } catch (ParseException | JOSEException e) {
       throw new AppException(INVALID_SIGNATURE, UNPROCESSABLE_ENTITY, "Invalid signature");
     }
-
-    return ResponseEntity.status(HttpStatus.OK).body(new RefreshTokenResponse(
-        getLocalizedMessage("refresh_token_success"),
-        newAccessToken));
-
   }
 
   @Override
@@ -158,4 +156,5 @@ public class AuthController implements IAuthController {
 
     return ResponseEntity.status(HttpStatus.OK).body(new IntrospectResponse(isValid));
   }
+
 }

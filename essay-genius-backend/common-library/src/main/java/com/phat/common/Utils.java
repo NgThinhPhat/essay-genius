@@ -1,8 +1,12 @@
 package com.phat.common;
 
+import io.grpc.Context;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,9 +16,19 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static com.phat.common.Constants.GRPC_AUTHORIZATION_CONTEXT;
+
+@Component
+@RequiredArgsConstructor
 public class Utils {
+    public static <T> T runWithAuthContext(String token, Supplier<T> supplier) throws Exception {
+        return Context.current()
+                .withValue(GRPC_AUTHORIZATION_CONTEXT, token)
+                .call(supplier::get);
+    }
 
     public static void handleRawFile(String filePath) throws IOException {
         String[] fileNameParts = filePath.split("/");
@@ -76,4 +90,5 @@ public class Utils {
 
         return authentication.getName();
     }
+
 }

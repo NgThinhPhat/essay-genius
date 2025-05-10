@@ -100,15 +100,21 @@ export const userInfoSchema = z.object({
   lastName: z.string(),
   avatar: z.string().nullable().optional(), // nếu có thể null
 });
+export const reactedInfoSchema = z.object({
+  isReacted: z.boolean(),
+  reactionId: z.string().nullable().optional(),
+  reactionType: z.enum(['STAR', 'LOVE', 'HAHA', 'WOW', 'FIRE', 'SAD']).nullable().optional(),
+});
 export const essayScoredResponseSchema = z.object({
   id: z.string(),
   user: userInfoSchema,
   essayText: z.string(),
   promptText: z.string(),
   band: z.number(),
-  createdAt: z.string(), // hoặc z.date() nếu bạn parse thành Date
+  createdAt: z.string(),
   stars: z.number(),
   comments: z.number(),
+  reactedInfo: reactedInfoSchema
 });
 export type EssayScoredResponse = z.infer<typeof essayScoredResponseSchema>;
 

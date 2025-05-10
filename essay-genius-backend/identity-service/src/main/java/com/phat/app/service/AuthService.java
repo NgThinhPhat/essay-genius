@@ -1,5 +1,6 @@
 package com.phat.app.service;
 
+import com.phat.api.model.response.RefreshTokenResponse;
 import com.phat.domain.enums.VerificationType;
 import com.phat.domain.model.User;
 import com.nimbusds.jose.JOSEException;
@@ -20,7 +21,7 @@ public interface AuthService {
 
     String generateToken(User user, boolean isRefresh);
 
-    String refresh(String refreshToken, HttpServletRequest servletRequest) throws ParseException, JOSEException;
+    RefreshTokenResponse refresh(String refreshToken, HttpServletRequest servletRequest) throws ParseException, JOSEException;
 
     void sendEmailForgotPassword(String email);
 

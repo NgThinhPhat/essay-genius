@@ -1,11 +1,13 @@
 package com.phat.domain.irepository;
 
 import com.phat.domain.model.Reaction;
+import com.phat.domain.model.ReactionType;
 import com.phat.domain.model.TargetType;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ReactionRepository extends MongoRepository<Reaction, String> {
@@ -15,5 +17,7 @@ public interface ReactionRepository extends MongoRepository<Reaction, String> {
 
     int countByTargetId(String targetId);
 
-    int countByTargetIdAndTargetType(String targetId, TargetType targetType);
+    int countByTargetIdAndReactionType(String targetId, ReactionType reactionType);
+
+    Optional<Reaction> findByTargetIdAndCreatedBy(String targetId, String createdBy);
 }

@@ -7,10 +7,12 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.Date;
@@ -32,7 +34,14 @@ public class Utils {
 
         return authentication.getName();
     }
-
+    public static File convertMultipartFileToFile(MultipartFile multipartFile, String fileName)
+            throws IOException {
+        File file = new File(fileName);
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            fos.write(multipartFile.getBytes());
+        }
+        return file;
+    }
     public static File getRandomFile(String folderPath) {
         int random = new Random().nextInt(9) + 1;
         ClassPathResource resource = new ClassPathResource(String.format("%s/%s-%s.jpg", folderPath, folderPath, random));

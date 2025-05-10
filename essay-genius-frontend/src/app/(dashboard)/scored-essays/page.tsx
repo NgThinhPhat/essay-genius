@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
@@ -29,6 +28,7 @@ import { api } from "@/lib/api"
 import { listEssayResponseSchema } from "@/constracts/essay.constract"
 import EssayPost from "@/components/layout/essay-post"
 import { Filter, Search } from "lucide-react"
+import { useState } from "react"
 
 const getEssaysQueryOptions = ({
   searchTerm,
@@ -138,7 +138,7 @@ export default function ScoredEssays() {
                     defaultValue={[5.0, 9.0]}
                     max={9.0}
                     min={5.0}
-                    step={0.5}
+                    step={1}
                     value={bandRange}
                     onValueChange={(val: number[]) => setBandRange([val[0], val[1]])}
                   />

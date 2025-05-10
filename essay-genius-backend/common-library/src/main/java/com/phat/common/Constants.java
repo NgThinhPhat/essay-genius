@@ -15,4 +15,5 @@ public class Constants {
     public static final ThreadLocal<String> REST_AUTHORIZATION_CONTEXT = new ThreadLocal<>();
 
     public static final JWSAlgorithm ACCESS_TOKEN_SIGNATURE_ALGORITHM = HS512;
+
 }

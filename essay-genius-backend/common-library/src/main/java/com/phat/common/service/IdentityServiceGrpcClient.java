@@ -4,11 +4,16 @@ import com.phat.common.exception.AppErrorCode;
 import com.phat.common.exception.AppException;
 import com.phat.common.response.UserInfo;
 import com.phat.grpc.identity.*;
+import com.phat.grpc.interaction.GetInteractionCountResponse;
 import io.grpc.Status;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.apache.catalina.User;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+
+import static com.phat.common.Utils.runWithAuthContext;
 
 @Slf4j
 @Service
@@ -19,6 +24,11 @@ public class IdentityServiceGrpcClient {
 
     public IntrospectResponse introspect(String token) {
         try {
+//            boolean isValid = runWithAuthContext(token, () -> identityServiceClient
+//                    .introspect(IntrospectRequest.newBuilder()
+//                            .setToken(token)
+//                            .build()))
+//                    .getValid();
             boolean isValid = identityServiceClient
                     .introspect(IntrospectRequest.newBuilder()
                             .setToken(token)

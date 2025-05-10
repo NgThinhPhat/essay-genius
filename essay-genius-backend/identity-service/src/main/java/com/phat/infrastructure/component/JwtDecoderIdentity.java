@@ -6,10 +6,9 @@ import com.nimbusds.jose.JOSEException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
@@ -22,10 +21,11 @@ import static com.phat.app.exception.AppErrorCode.INVALID_TOKEN;
 import static com.phat.app.helper.Constants.ACCESS_TOKEN_SIGNATURE_ALGORITHM;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
-@Component
+@Component("jwtDecoderIdentity")
 @RequiredArgsConstructor
 @Slf4j
-public class CustomJwtDecoder implements JwtDecoder {
+@Primary
+public class JwtDecoderIdentity implements org.springframework.security.oauth2.jwt.JwtDecoder {
 
     @Value("${jwt.accessSignerKey}")
     private String ACCESS_SIGNER_KEY;

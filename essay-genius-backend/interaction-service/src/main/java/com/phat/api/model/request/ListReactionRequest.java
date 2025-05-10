@@ -18,7 +18,6 @@ public class ListReactionRequest extends AbstractMongoPageableRequest<Reaction> 
     private String targetId;
     private TargetType targetType;
     private ReactionType reactionType;
-    private String createdBy;
 
     @Override
     public Criteria toCriteria() {
@@ -38,10 +37,6 @@ public class ListReactionRequest extends AbstractMongoPageableRequest<Reaction> 
 
         if (reactionType != null) {
             criteriaList.add(Criteria.where("reactionType").is(reactionType));
-        }
-
-        if (createdBy != null && !createdBy.isBlank()) {
-            criteriaList.add(Criteria.where("createdBy").is(createdBy));
         }
 
         return criteriaList.isEmpty()

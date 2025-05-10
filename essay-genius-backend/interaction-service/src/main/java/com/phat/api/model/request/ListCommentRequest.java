@@ -30,6 +30,9 @@ public class ListCommentRequest extends AbstractMongoPageableRequest<Comment> {
         if (parentId != null && !parentId.isBlank()) {
             criteriaList.add(Criteria.where("parentId").is(parentId));
         }
+        else{
+            criteriaList.add(Criteria.where("parentId").is(null));
+        }
 
         // Lọc theo createdBy
         if (createdBy != null && !createdBy.isBlank()) {

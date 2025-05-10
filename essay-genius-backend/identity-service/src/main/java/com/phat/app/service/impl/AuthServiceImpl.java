@@ -1,6 +1,7 @@
 package com.phat.app.service.impl;
 
 import com.phat.api.model.request.SendMailDto;
+import com.phat.api.model.response.RefreshTokenResponse;
 import com.phat.app.exception.AppException;
 import com.phat.app.service.AuthService;
 import com.phat.app.service.BaseRedisService;
@@ -45,6 +46,7 @@ import java.util.UUID;
 
 import static com.phat.app.exception.AppErrorCode.*;
 import static com.phat.app.helper.Constants.*;
+import static com.phat.common.components.Translator.getLocalizedMessage;
 import static com.phat.domain.enums.VerificationType.*;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.time.temporal.ChronoUnit.MINUTES;
@@ -259,7 +261,7 @@ public class AuthServiceImpl implements AuthService {
   }
 
   @Override
-  public String refresh(String refreshToken, HttpServletRequest servletRequest) throws ParseException, JOSEException {
+  public RefreshTokenResponse refresh(String refreshToken, HttpServletRequest servletRequest) throws ParseException, JOSEException {
     SignedJWT signedJWT = verifyToken(refreshToken, true);
     String id = signedJWT.getJWTClaimsSet().getSubject();
 
@@ -270,23 +272,33 @@ public class AuthServiceImpl implements AuthService {
       throw new AppException(INVALID_TOKEN, BAD_REQUEST, "Invalid token");
     }
 
-    if (servletRequest.getHeader("Authorization") == null)
-      throw new AppException(INVALID_TOKEN, BAD_REQUEST, "Invalid token");
+    if (servletRequest.getHeader("Authorization") != null){
+      String accessToken = servletRequest.getHeader("Authorization").substring(7);
+      SignedJWT signedAccessTokenJWT = SignedJWT.parse(accessToken);
+      String jwtID = signedAccessTokenJWT.getJWTClaimsSet().getJWTID();
+      Date expiryTime = signedAccessTokenJWT.getJWTClaimsSet().getExpirationTime();
 
-    String accessToken = servletRequest.getHeader("Authorization").substring(7);
-    SignedJWT signedAccessTokenJWT = SignedJWT.parse(accessToken);
-    String jwtID = signedAccessTokenJWT.getJWTClaimsSet().getJWTID();
-    Date expiryTime = signedAccessTokenJWT.getJWTClaimsSet().getExpirationTime();
+      if (!signedAccessTokenJWT.getJWTClaimsSet().getSubject().equals(id))
+        throw new AppException(INVALID_TOKEN, BAD_REQUEST, "Invalid token");
 
-    if (!signedAccessTokenJWT.getJWTClaimsSet().getSubject().equals(id))
-      throw new AppException(INVALID_TOKEN, BAD_REQUEST, "Invalid token");
-
-    if (expiryTime.after(new Date())) {
-      baseRedisService.setWithExpiration(jwtID, "revoked",
-          expiryTime.getTime() - System.currentTimeMillis(), MILLISECONDS);
+      if (expiryTime.after(new Date())) {
+        baseRedisService.setWithExpiration(jwtID, "revoked",
+                expiryTime.getTime() - System.currentTimeMillis(), MILLISECONDS);
+      }
     }
 
-    return generateToken(user, false);
+    String jwtID = signedJWT.getJWTClaimsSet().getJWTID();
+    Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+    if (expiryTime.after(new Date())) {
+      baseRedisService.setWithExpiration(jwtID, "revoked",
+              expiryTime.getTime() - System.currentTimeMillis(), MILLISECONDS);
+    }
+
+    return RefreshTokenResponse.builder()
+            .accessToken(generateToken(user, false))
+            .refreshToken(generateToken(user, true))
+            .message(getLocalizedMessage("refresh_token_success"))
+            .build();
   }
 
   @Override

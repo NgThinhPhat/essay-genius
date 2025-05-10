@@ -3,6 +3,8 @@ from concurrent import futures
 import grpc
 from application.proto_message import ScoringResponse
 from application.proto_message import GenerateEssayPromptResponse
+from application.proto_message import ToxicCheckerResponse
+from toxicchecker import infer
 from google import genai
 from google.genai import client, types
 from protobuf import ai_service_pb2_grpc
@@ -558,3 +560,11 @@ The process seems robust. I will now generate the final response based on the us
                 valid=False,
                 result=cleaned_result,
             )
+
+    def ToxicChecker(self, request, context):
+        try:
+            result = infer.predict(request.sentence)
+            print("result", result)
+            return ToxicCheckerResponse(valid=True, result=result[0])
+        except Exception as e:
+            return ToxicCheckerResponse(valid=False, result=e)

@@ -1,5 +1,5 @@
 server:
-  port: 9000
+  port: 9050
 
 springdoc:
   swagger-ui:

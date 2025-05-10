@@ -80,4 +80,4 @@ openapi:
 
 gateway:
   domain: ${GATEWAY_DOMAIN:localhost}
-  port: ${GATEWAY_PORT:9000}
+  port: ${GATEWAY_PORT:9050}

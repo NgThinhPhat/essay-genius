@@ -1,12 +1,12 @@
 package com.phat.infrastructure.security;
 
-import com.phat.infrastructure.component.CustomJwtDecoder;
+import com.phat.infrastructure.component.JwtDecoderIdentity;
 import com.phat.infrastructure.component.JwtAuthenticationEntryPoint;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -14,14 +14,9 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-
-import javax.crypto.spec.SecretKeySpec;
 
 import static com.phat.app.helper.Constants.MICROSERVICE_NAME;
 
@@ -30,17 +25,17 @@ import static com.phat.app.helper.Constants.MICROSERVICE_NAME;
 @EnableWebSecurity
 public class SecurityConfig{
     String[] PUBLIC_ENDPOINTS = new String[] {
-            "/auth",
-            "/auth/verify-email-by-code",
-            "/auth/verify-email-by-token",
-            "/auth/send-email-verification",
-            "/auth/send-forgot-password",
-            "/auth/forgot-password",
-            "/auth/reset-password",
-            "/auth/sign-up",
-            "/auth/sign-in",
-            "/auth/sign-out",
-            "/auth/introspect",
+            "/verify-email-by-code",
+            "/verify-email-by-token",
+            "/send-email-verification",
+            "/refresh-token",
+            "/send-forgot-password",
+            "/forgot-password",
+            "/reset-password",
+            "/sign-up",
+            "/sign-in",
+            "/sign-out",
+            "/introspect",
             "/actuator/health",
             "/actuator/info",
             "/actuator/prometheus",
@@ -56,7 +51,8 @@ public class SecurityConfig{
     @Value("${jwt.accessSignerKey}")
     private String accessSignerKey;
 
-    CustomJwtDecoder customJwtDecoder;
+    @Qualifier("jwtDecoderIdentity")
+    JwtDecoderIdentity customJwtDecoder;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpRequest) throws Exception {

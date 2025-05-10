@@ -1,6 +1,5 @@
 package com.phat;
 
-import com.phat.common.components.CustomJwtDecoder;
 import com.phat.common.configs.CommonSecurityConfig;
 import com.phat.common.exception.GlobalExceptionHandler;
 import org.springframework.boot.SpringApplication;
@@ -15,7 +14,6 @@ import org.springframework.context.annotation.FilterType;
                 type = FilterType.ASSIGNABLE_TYPE,
                 classes = {
                         CommonSecurityConfig.class,
-                        CustomJwtDecoder.class,
                         GlobalExceptionHandler.class
                 }
         ))

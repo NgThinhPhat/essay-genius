@@ -4,7 +4,8 @@ import lombok.Builder;
 
 @Builder
 public record InteractionCountResponse (
-        int reactionCount,
-        int commentCount
+        long reactionCount,
+        long commentCount,
+        ReactedInfo reactedInfo
 ){
 }

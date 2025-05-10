@@ -2,14 +2,21 @@ package com.phat.app.service.impl;
 
 import com.phat.api.model.request.ListCommentRequest;
 import com.phat.api.model.request.ListReactionRequest;
+import com.phat.api.model.response.CommentResponse;
+import com.phat.api.model.response.ReactionResponse;
+import com.phat.api.model.response.ToxicCheckerResponse;
 import com.phat.common.response.InteractionCountResponse;
 import com.phat.app.service.InteractionService;
+import com.phat.common.response.ReactedInfo;
+import com.phat.common.response.UserInfo;
+import com.phat.common.service.IdentityServiceGrpcClient;
 import com.phat.domain.irepository.CommentRepository;
 import com.phat.domain.irepository.ReactionRepository;
 import com.phat.domain.model.Comment;
 import com.phat.domain.model.Reaction;
 
 import java.util.List;
+import java.util.Optional;
 
 
 import com.phat.domain.model.ReactionType;
@@ -34,12 +41,15 @@ public class InteractionServiceImpl implements InteractionService {
     ReactionRepository reactionRepository;
     MongoTemplate mongoTemplate;
     EssayGrpcClient essayGrpcClient;
+    IdentityServiceGrpcClient identityServiceGrpcClient;
+    AIGrpcClient aiGrpcClient;
     @Override
     @Transactional
-    public Comment addComment(String essayId, String content, String parentCommentId) {
+    public ToxicCheckerResponse addComment(String essayId, String content, String parentCommentId) {
         if (!essayGrpcClient.isEssayIdExist(essayId)) {
             throw new IllegalArgumentException("Essay ID does not exist");
         }
+
         if (parentCommentId != null) {
             Comment parentComment = commentRepository.findById(parentCommentId)
                     .orElseThrow(() -> new IllegalArgumentException("Parent comment not found"));
@@ -53,7 +63,11 @@ public class InteractionServiceImpl implements InteractionService {
                 .replyCount(0)
                 .build();
 
-        return commentRepository.save(comment);
+        ToxicCheckerResponse toxicCheckerResponse = aiGrpcClient.checkToxic(content);
+        if (toxicCheckerResponse.valid())
+            commentRepository.save(comment);
+
+        return toxicCheckerResponse;
     }
 
     @Override
@@ -77,24 +91,51 @@ public class InteractionServiceImpl implements InteractionService {
         return reactionRepository.save(reaction);
     }
 
-    public Page<Comment> findAllComments(ListCommentRequest request) {
+    public Page<CommentResponse> findAllComments(ListCommentRequest request) {
         Query baseQuery = new Query(request.toCriteria());
         long total = mongoTemplate.count(baseQuery, Comment.class);
 
         Query query = new Query(request.toCriteria()).with(request.toPageable());
         List<Comment> comments = mongoTemplate.find(query, Comment.class);
+        List<CommentResponse> responses = comments.stream().map(
+                comment -> {
+                    UserInfo userInfo = identityServiceGrpcClient.getUserInfo(comment.getCreatedBy());
+                    return CommentResponse.builder()
+                            .user(userInfo)
+                            .id(comment.getId())
+                            .createdAt(comment.getCreatedAt())
+                            .content(comment.getContent())
+                            .essayId(comment.getEssayId())
+                            .parentId(comment.getParentId())
+                            .replyCount(getCommentReply(comment.getId()))
+                            .reactionCount(getReactionCount(comment.getId()))
+                            .build();
+                }
+        ).toList();
 
-        return new PageImpl<>(comments, request.toPageable(), total);
+        return new PageImpl<>(responses, request.toPageable(), total);
     }
 
-    public Page<Reaction> findAllReactions(ListReactionRequest request) {
+    public Page<ReactionResponse> findAllReactions(ListReactionRequest request) {
         Query baseQuery = new Query(request.toCriteria());
         long total = mongoTemplate.count(baseQuery, Reaction.class);
 
         Query query = new Query(request.toCriteria()).with(request.toPageable());
         List<Reaction> reactions = mongoTemplate.find(query, Reaction.class);
-
-        return new PageImpl<>(reactions, request.toPageable(), total);
+        List<ReactionResponse> responses = reactions.stream().map(
+                reaction -> {
+                    UserInfo userInfo = identityServiceGrpcClient.getUserInfo(reaction.getCreatedBy());
+                    return ReactionResponse.builder()
+                            .user(userInfo)
+                            .reactionType(reaction.getReactionType())
+                            .targetId(reaction.getTargetId())
+                            .targetType(reaction.getTargetType())
+                            .createdAt(reaction.getCreatedAt())
+                            .id(reaction.getId())
+                            .build();
+                }
+        ).toList();
+        return new PageImpl<>(responses, request.toPageable(), total);
     }
 
     @Override
@@ -112,13 +153,40 @@ public class InteractionServiceImpl implements InteractionService {
     }
 
     @Override
-    public InteractionCountResponse getInteractionCount(String targetId) {
-        int reactionCount = reactionRepository.countByTargetId(targetId);
-        int commentCount = commentRepository.countByEssayId(targetId);
-        InteractionCountResponse interactionCountResponse = InteractionCountResponse.builder()
-                .commentCount(commentCount).reactionCount(reactionCount).build();
+    public long getCommentCount(String targetId) {
+        return commentRepository.countByEssayId(targetId);
+    }
 
-        return interactionCountResponse;
+    @Override
+    public long getReactionCount(String targetId) {
+        return reactionRepository.countByTargetId(targetId);
+    }
+
+    @Override
+    public long getCommentReply(String parentId) {
+        return commentRepository.countByParentId(parentId);
+    }
+
+    @Override
+    public long getReactionCountByTargetIdAndType(String targetId, ReactionType reactionType) {
+        return reactionRepository.countByTargetIdAndReactionType(targetId, reactionType);
+    }
+
+    @Override
+    public ReactedInfo isUserReacted(String targetId, String userId) {
+        Optional<Reaction> reaction = reactionRepository.findByTargetIdAndCreatedBy(targetId, userId);
+        if (reaction.isPresent()){
+            return ReactedInfo.builder()
+                    .reactionType(String.valueOf(reaction.get().getReactionType()))
+                    .reactionId(reaction.get().getId())
+                    .isReacted(true)
+                    .build();
+        }
+        else{
+            return ReactedInfo.builder()
+                    .isReacted(false)
+                    .build();
+        }
     }
 
 }
