@@ -20,4 +20,6 @@ public interface ReactionRepository extends MongoRepository<Reaction, String> {
     int countByTargetIdAndReactionType(String targetId, ReactionType reactionType);
 
     Optional<Reaction> findByTargetIdAndCreatedBy(String targetId, String createdBy);
+    Optional<Reaction> findByIdAndCreatedBy(String id, String createdBy);
+
 }

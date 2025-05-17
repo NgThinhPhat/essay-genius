@@ -39,22 +39,21 @@ public class MockServiceImpl implements MockService {
                 .email("nguyenthinhphat3009@gmail.com")
                 .firstName("Phat")
                 .lastName("Nguyen")
-                .avatar(faker.avatar().image())
-                .password(passwordEncoder.encode("password"))
+                .avatar("image_20250517_132027_e004037b-f8ab-4042-8c0c-6eb01223d818.jpeg")
+                .password(passwordEncoder.encode("phat12"))
+                .enabled(true)
                 .build());
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 50; i++) {
             String email = faker.internet().emailAddress();
             String firstName = faker.name().firstName();
             String lastName = faker.name().lastName();
             String avatar = faker.avatar().image();
             try {
-                // Download the image as bytes
                 byte[] imageBytes = downloadImageAsBytes(avatar);
-                // Upload the image to MinIO
-                minioClientService.uploadObject(imageBytes, email, "image/jpeg", "user-avatars");
+                minioClientService.uploadObject(imageBytes, "user-avatars", avatar, "image/jpeg");
             } catch (Exception e) {
                 log.error("Error when retrieving avatar URL for user: {}", email, e);
-                avatar = "https://default-avatar-url.com"; // Fallback URL
+                avatar = "https://default-avatar-url.com";
             }
 
             userService.createUser(User.builder()
@@ -62,6 +61,7 @@ public class MockServiceImpl implements MockService {
                     .firstName(firstName)
                     .lastName(lastName)
                     .avatar(avatar)
+                    .enabled(true)
                     .password(passwordEncoder.encode("password"))
                     .build());
         }
@@ -74,6 +74,7 @@ public class MockServiceImpl implements MockService {
             return in.readAllBytes();
         }
     }
+
     @Override
     public void clear() {
         userRepository.deleteAll();

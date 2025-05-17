@@ -1,13 +1,19 @@
 package com.phat.app.service.impl;
 
 import java.text.ParseException;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.google.protobuf.Empty;
 import com.nimbusds.jose.JOSEException;
 import com.phat.api.mapper.UserMapper;
 import com.phat.app.service.AuthService;
 import com.phat.app.service.MinioClientService;
 import com.phat.app.service.UserService;
 import com.phat.common.response.UserInfo;
+import com.phat.domain.irepository.UserRepository;
 import com.phat.domain.model.User;
+import com.phat.grpc.essay.GetEssayIdsResponse;
 import com.phat.grpc.identity.*;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +30,7 @@ public class IdentityServiceGrpcServer extends IdentityServiceGrpc.IdentityServi
     private final AuthService authService;
     private final UserService userService;
     private final MinioClientService minioClientService;
+    private final UserRepository userRepository;
 
     @Override
     public void introspect(IntrospectRequest request,
@@ -74,5 +81,19 @@ public class IdentityServiceGrpcServer extends IdentityServiceGrpc.IdentityServi
                     .asRuntimeException());
             return;
         }
+    }
+    @Override
+    public void getUserIds(Empty request, StreamObserver<GetUserIdsResponse> responseObserver) {
+        List<String> userIds = userRepository.findAll()
+                .stream()
+                .map(User::getId)
+                .collect(Collectors.toList());
+
+        GetUserIdsResponse response = GetUserIdsResponse.newBuilder()
+                .addAllUserIds(userIds)
+                .build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
     }
 }

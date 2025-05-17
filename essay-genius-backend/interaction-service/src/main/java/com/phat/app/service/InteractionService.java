@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 public interface InteractionService {
     ToxicCheckerResponse addComment(String essayId, String content, String parentCommentId);
 
+    Comment addCommentMock(String essayId, String content, String parentCommentId);
+
     Reaction addReaction(String targetId, String targetType, String type);
 
     Page<CommentResponse> findAllComments(ListCommentRequest request);

@@ -21,7 +21,7 @@ public class MockController {
         return "Database initialized with mock data!";
     }
 
-    @PostMapping("/test")
+    @PostMapping
     public String mock() {
         mockService.mock();
         return "Mock data succeed!";

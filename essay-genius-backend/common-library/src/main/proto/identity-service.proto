@@ -1,6 +1,6 @@
 syntax = "proto3";
+import "google/protobuf/empty.proto";
 package com.phat.grpc.identity;
-
 option java_outer_classname = "proto";
 option java_multiple_files = true;
 
@@ -37,9 +37,15 @@ message GetUserInfoResponse {
   string avatar = 4;
   string email = 5;
 }
+
+message GetUserIdsResponse {
+  repeated string user_ids = 1;
+}
+
 service IdentityService {
   rpc introspect(IntrospectRequest) returns (IntrospectResponse) {}
   rpc GetCurrentUser (GetCurrentUserRequest) returns (GetCurrentUserResponse);
   rpc GetCurrentUserId (GetCurrentUserRequest) returns (GetCurrentUserResponse);
   rpc GetUserInfo (GetUserInfoRequest) returns (GetUserInfoResponse);
+  rpc GetUserIds (google.protobuf.Empty) returns (GetUserIdsResponse);
 }

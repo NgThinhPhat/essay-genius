@@ -41,6 +41,7 @@ public enum AppErrorCode {
     USER_ALREADY_VERIFIED("auth/user-already-verified", "user_already_verified"),
     CANNOT_SEND_EMAIL("auth/cannot-send-email", "cannot_send_email"),
 
+
     //Rate Limiting Errors
     TOO_MANY_REQUESTS("auth/too-many-requests", "too_many_requests"),
     RATE_LIMIT_EXCEEDED("auth/rate-limit-exceeded", "rate_limit_exceeded"),
@@ -48,6 +49,8 @@ public enum AppErrorCode {
     CONNECTION_REFUSED("grpc/connection-refused", "connection_refused"),
 
     GET_USER_INFO_FAILED("identity/get-user-info-failed", "get_user_info_failed"),
+    //common error
+    ALREADY_EXISTS("common/already-exists", "already_exists"),
     ;
 
     private final String code;

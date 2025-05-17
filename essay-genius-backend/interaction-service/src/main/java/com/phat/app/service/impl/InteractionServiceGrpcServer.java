@@ -1,6 +1,5 @@
 package com.phat.app.service.impl;
 
-import com.phat.common.response.InteractionCountResponse;
 import com.phat.app.service.InteractionService;
 import com.phat.grpc.interaction.*;
 import io.grpc.stub.StreamObserver;

@@ -29,7 +29,7 @@ public class AIGrpcClient {
             com.phat.grpc.ai.ToxicCheckerResponse response = stub.toxicChecker(request);
             return ToxicCheckerResponse.builder()
                     .valid(response.getValid())
-                    .result(response.getResult())
+                    .message(response.getResult())
                     .build();
 
         } catch (Exception e) {

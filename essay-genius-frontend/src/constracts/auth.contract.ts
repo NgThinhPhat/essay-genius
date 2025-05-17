@@ -51,8 +51,9 @@ export const authContract = c.router({
   },
   signOut: {
     method: 'POST',
-    path: '/sign-out',
+    path: '/identity/sign-out',
     body: z.object({
+      accessToken: z.string(),
       refreshToken: z.string()
     }),
     responses: {

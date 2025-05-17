@@ -30,15 +30,13 @@ public class InteractionController {
 
     @PostMapping("/comments")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<CommonResponse> addComment(@Valid @RequestBody CreateCommentRequest createCommentRequest) {
+    public ResponseEntity<ToxicCheckerResponse> addComment(@Valid @RequestBody CreateCommentRequest createCommentRequest) {
         ToxicCheckerResponse toxicCheckerResponse = interactionService.addComment(
                 createCommentRequest.essayId(),
                 createCommentRequest.content(),
                 createCommentRequest.parentId()
         );
-        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.builder()
-                        .results(toxicCheckerResponse)
-                .message(toxicCheckerResponse.valid() ? "Comment added successfully" : "Comment Failed").build());
+        return ResponseEntity.status(HttpStatus.CREATED).body(toxicCheckerResponse);
     }
 
     @GetMapping("/comments")

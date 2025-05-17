@@ -11,12 +11,9 @@ import io.grpc.Context;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import static com.phat.common.Utils.getCurrentUser;
-import static com.phat.common.Utils.runWithAuthContext;
 
 @Service
 @Slf4j

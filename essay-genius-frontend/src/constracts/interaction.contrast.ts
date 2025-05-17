@@ -1,7 +1,7 @@
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
 import { pageableRequestSchema, pageableResponseSchema } from '@/lib/schemas/page.schema';
-import { commonResponseSchema, userInfoSchema } from './essay.constract';
+import { commonResponseSchema, reactedInfoSchema, userInfoSchema } from './essay.constract';
 
 const c = initContract();
 
@@ -17,8 +17,9 @@ export const commentSchema = z.object({
   createdAt: z.string(),
   reactionCount: z.number(),
   replyCount: z.number(),
+  reactedInfo: reactedInfoSchema
 });
-export type Comment = z.infer<typeof commentSchema>;
+export type CommentSchema = z.infer<typeof commentSchema>;
 
 export const createCommentRequestSchema = z.object({
   essayId: z.string(),
@@ -26,6 +27,13 @@ export const createCommentRequestSchema = z.object({
   content: z.string(),
 });
 export type CreateCommentRequest = z.infer<typeof createCommentRequestSchema>;
+
+export const createCommentResponse = z.object({
+  valid: z.boolean(),
+  message: z.string(),
+  commentResponse: commentSchema.optional().nullable(),
+});
+export type CreateCommentResponse = z.infer<typeof createCommentResponse>;
 
 export const pageCommentResponseSchema = pageableResponseSchema(commentSchema);
 export type PageComment = z.infer<typeof pageCommentResponseSchema>;
@@ -39,6 +47,9 @@ export type PageCommentRequest = z.infer<typeof pageCommentRequestSchema>;
 
 // ---------- Reaction ----------
 //
+
+export const reactionTypeSchema = z.enum(['STAR', 'LOVE', 'HAHA', 'WOW', 'FIRE', 'SAD']);
+export type ReactionType = z.infer<typeof reactionTypeSchema>;
 export const reactionSchema = z.object({
   id: z.string(),
   targetId: z.string(),
@@ -47,9 +58,10 @@ export const reactionSchema = z.object({
   createdAt: z.string(),
   targetType: z.enum(['ESSAY', 'COMMENT']), // loại đối tượng mà reaction hướng tới
 });
-export type Reaction = z.infer<typeof reactionSchema>;
+export type ReactionSchema = z.infer<typeof reactionSchema>;
 
 export const commonReactionSchema = reactionSchema.omit({ user: true, createdAt: true });
+export type CommonReactionSchema = z.infer<typeof commonReactionSchema>;
 
 export const createReactionRequestSchema = z.object({
   targetId: z.string(),
@@ -76,7 +88,7 @@ export const interactionContract = c.router({
     path: '/interaction/comments',
     body: createCommentRequestSchema,
     responses: {
-      201: commonResponseSchema,
+      201: createCommentResponse,
     },
   },
   getComments: {

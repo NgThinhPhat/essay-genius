@@ -1,5 +1,6 @@
 package com.phat.api.model.response;
 
+import com.phat.common.response.ReactedInfo;
 import com.phat.common.response.UserInfo;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -21,4 +22,5 @@ public class CommentResponse {
     Date createdAt;
     long reactionCount;
     long replyCount;
+    ReactedInfo reactedInfo;
 }

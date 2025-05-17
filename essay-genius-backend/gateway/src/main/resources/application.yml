@@ -16,7 +16,7 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins: "http://localhost:3000" # Next.js frontend
+            allowedOrigins: "http://localhost:3000"
             allowedMethods: "*"
             allowedHeaders: "Authorization,Content-Type,Accept-Language,No-Auth"
             allowCredentials: true
@@ -44,11 +44,11 @@ spring:
     cache-duration: 3600
 
 
-#logging:
-#  level:
-#    org.springframework.beans.factory: DEBUG
-#    org.springframework.cloud.gateway: DEBUG
-#
+logging:
+  level:
+    org.springframework.beans.factory: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+
 eureka:
   client:
     service-url:

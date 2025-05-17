@@ -35,6 +35,8 @@ import {
 import { isAxiosError } from "axios";
 import { useCurrentUserActions } from "../current-user-store";
 import { useTokenActions } from "../token-store";
+import { deleteCookie } from "cookies-next";
+import { api } from "@/lib/api";
 
 export function useSignUpMutation() {
   return useMutation<
@@ -146,5 +148,21 @@ export function useResetPasswordMutation() {
     mutationKey: ["auth", "reset-password"],
     mutationFn: (body) => resetPassword(body),
     throwOnError: (error) => isAxiosError(error),
+  });
+}
+
+
+export function useSignOutMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (tokens: { accessToken: string; refreshToken: string }) =>
+      api.auth.signOut({ body: tokens }),
+    onSuccess: () => {
+      deleteCookie('access_token');
+      deleteCookie('refresh_token');
+      console.log("Sign out successful");
+      queryClient.invalidateQueries({ queryKey: ['current_user'] });
+    },
   });
 }

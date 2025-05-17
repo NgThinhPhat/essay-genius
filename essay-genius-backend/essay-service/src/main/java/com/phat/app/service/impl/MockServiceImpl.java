@@ -4,20 +4,29 @@ import com.phat.api.model.response.EssayResponseWrapper;
 import com.phat.api.model.response.EssayTaskTwoScoreResponse;
 import com.phat.app.service.MockService;
 
+import com.phat.common.service.IdentityServiceGrpcClient;
 import com.phat.domain.irepository.EssaySubmissionRepository;
 import com.phat.domain.model.EssaySubmission;
 import lombok.RequiredArgsConstructor;
+import net.datafaker.Faker;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+import static com.phat.common.Utils.getCurrentUser;
+import static com.phat.common.Utils.mockSecurityContext;
 
 @Service
 @RequiredArgsConstructor
 public class MockServiceImpl implements MockService {
 
     private final EssaySubmissionRepository essaySubmissionRepository;
+    private final IdentityServiceGrpcClient identityServiceGrpcClient;
+    private final Faker faker = new Faker(new Locale("en"));
 
     private static final Random random = new Random();
 
@@ -29,24 +38,25 @@ public class MockServiceImpl implements MockService {
 
     @Override
     public void mock() {
-        List<EssaySubmission> submissions = new ArrayList<>();
+        List<String> userIds = identityServiceGrpcClient.getUserIds();
 
-        for (int i = 1; i <= 20; i++) {
+        for (int i = 1; i <= 200; i++) {
+            String randomUserId = userIds.get(faker.random().nextInt(userIds.size()));
+            mockSecurityContext(randomUserId);
+
             EssayResponseWrapper<EssayTaskTwoScoreResponse> scoreWrapper = new EssayResponseWrapper<>();
             scoreWrapper.setValid(true);
             EssayTaskTwoScoreResponse randomScores = generateRandomResult();
             scoreWrapper.setResult(randomScores);
             EssaySubmission submission = EssaySubmission.builder()
-                    .promptText("Describe an important event in your life " + i)
-                    .essayText("This is the essay content number " + i)
+                    .promptText(faker.lorem().paragraph(4))
+                    .essayText(faker.lorem().paragraph(50))
                     .band(Math.floor(randomScores.getOverallBand()))
                     .essayTaskTwoScoreResponse(scoreWrapper)
                     .build();
-
-            submissions.add(submission);
+            submission.setCreatedAt(Date.from(faker.timeAndDate().past(60, TimeUnit.DAYS)));
+            essaySubmissionRepository.save(submission);
         }
-
-        essaySubmissionRepository.saveAll(submissions);
     }
 
     @Override

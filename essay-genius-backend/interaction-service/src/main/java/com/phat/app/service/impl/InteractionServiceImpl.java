@@ -1,10 +1,13 @@
 package com.phat.app.service.impl;
 
+import com.phat.api.mapper.CommentMapper;
 import com.phat.api.model.request.ListCommentRequest;
 import com.phat.api.model.request.ListReactionRequest;
 import com.phat.api.model.response.CommentResponse;
 import com.phat.api.model.response.ReactionResponse;
 import com.phat.api.model.response.ToxicCheckerResponse;
+import com.phat.common.exception.AppErrorCode;
+import com.phat.common.exception.AppException;
 import com.phat.common.response.InteractionCountResponse;
 import com.phat.app.service.InteractionService;
 import com.phat.common.response.ReactedInfo;
@@ -28,24 +31,55 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.phat.common.Utils.getCurrentUser;
 
 @Service
 @Transactional
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
 public class InteractionServiceImpl implements InteractionService {
-
+    IdentityServiceGrpcClient identityServiceGrpcClient;
     CommentRepository commentRepository;
     ReactionRepository reactionRepository;
     MongoTemplate mongoTemplate;
     EssayGrpcClient essayGrpcClient;
-    IdentityServiceGrpcClient identityServiceGrpcClient;
     AIGrpcClient aiGrpcClient;
+    CommentMapper commentMapper;
     @Override
     @Transactional
-    public ToxicCheckerResponse addComment(String essayId, String content, String parentCommentId) {
+    public ToxicCheckerResponse addComment(String essayId, String content, String parentCommentId) {if (!essayGrpcClient.isEssayIdExist(essayId)) throw new IllegalArgumentException("Essay ID does not exist");
+        if (parentCommentId != null) {
+            Comment parentComment = commentRepository.findById(parentCommentId)
+                    .orElseThrow(() -> new IllegalArgumentException("Parent comment not found"));
+            parentComment.setReplyCount(parentComment.getReplyCount() + 1);
+            commentRepository.save(parentComment);
+        }
+        Comment comment = Comment.builder()
+                .essayId(essayId)
+                .content(content)
+                .parentId(parentCommentId)
+                .replyCount(0)
+                .reactionCount(0)
+                .build();
+
+        ToxicCheckerResponse toxicCheckerResponse = aiGrpcClient.checkToxic(content);
+        if (toxicCheckerResponse.isValid()){
+            commentRepository.save(comment);
+            CommentResponse commentResponse = commentMapper.toCommentResponse(comment);
+            commentResponse.setUser(identityServiceGrpcClient.getUserInfo(getCurrentUser()));
+            toxicCheckerResponse.setCommentResponse(commentResponse);
+        }
+
+        return toxicCheckerResponse;
+    }
+
+    @Override
+    @Transactional
+    public Comment addCommentMock(String essayId, String content, String parentCommentId) {
         if (!essayGrpcClient.isEssayIdExist(essayId)) {
             throw new IllegalArgumentException("Essay ID does not exist");
         }
@@ -63,15 +97,20 @@ public class InteractionServiceImpl implements InteractionService {
                 .replyCount(0)
                 .build();
 
-        ToxicCheckerResponse toxicCheckerResponse = aiGrpcClient.checkToxic(content);
-        if (toxicCheckerResponse.valid())
-            commentRepository.save(comment);
-
-        return toxicCheckerResponse;
+        return commentRepository.save(comment);
     }
 
     @Override
     public Reaction addReaction(String targetId, String targetType, String type) {
+        Optional<Reaction> reactionFlat = reactionRepository.findByTargetIdAndCreatedBy(targetId, getCurrentUser());
+        if (reactionFlat.isPresent()){
+            Reaction reaction = reactionFlat.get();
+            if (reaction.getReactionType().name().equalsIgnoreCase(type)){
+                throw new AppException(AppErrorCode.ALREADY_EXISTS, HttpStatus.BAD_REQUEST, "Reaction already exists");
+            }
+            reaction.setReactionType(ReactionType.valueOf(type.toUpperCase()));
+            return reactionRepository.save(reaction);
+        }
         if(targetType.equals(TargetType.valueOf("COMMENT").name())) {
             Comment comment = commentRepository.findById(targetId)
                     .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
@@ -100,6 +139,7 @@ public class InteractionServiceImpl implements InteractionService {
         List<CommentResponse> responses = comments.stream().map(
                 comment -> {
                     UserInfo userInfo = identityServiceGrpcClient.getUserInfo(comment.getCreatedBy());
+                    ReactedInfo reactedInfo = isUserReacted(comment.getId(), getCurrentUser());
                     return CommentResponse.builder()
                             .user(userInfo)
                             .id(comment.getId())
@@ -109,6 +149,7 @@ public class InteractionServiceImpl implements InteractionService {
                             .parentId(comment.getParentId())
                             .replyCount(getCommentReply(comment.getId()))
                             .reactionCount(getReactionCount(comment.getId()))
+                            .reactedInfo(reactedInfo)
                             .build();
                 }
         ).toList();
@@ -147,7 +188,7 @@ public class InteractionServiceImpl implements InteractionService {
 
     @Override
     public void deleteReaction(String reactionId) {
-        Reaction reaction = reactionRepository.findById(reactionId)
+        Reaction reaction = reactionRepository.findByIdAndCreatedBy(reactionId, getCurrentUser())
                 .orElseThrow(() -> new IllegalArgumentException("Reaction not found"));
         reactionRepository.delete(reaction);
     }

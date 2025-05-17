@@ -11,11 +11,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MoreHorizontal, MessageSquare, Star, Send } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EssayScoredResponse } from "@/constracts/essay.constract";
-import { PageCommentRequest, CreateCommentRequest, createCommentRequestSchema } from "@/constracts/interaction.contrast";
+import { PageCommentRequest, CreateCommentRequest, createCommentRequestSchema, CreateCommentResponse, CommonReactionSchema } from "@/constracts/interaction.contrast";
 import { api } from "@/lib/api";
 import ReactionDialog from "./reaction-dialog";
 import { CommentItem } from "./comment-item";
-import { useCommentMutation } from "@/hooks/mutations/interaction.mutation";
+import { useCommentMutation, useDeleteReactionMutation, useReactionMutation } from "@/hooks/mutations/interaction.mutation";
 import { FormControl, FormField, FormItem, FormMessage } from "../ui/form";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -50,42 +50,23 @@ function useComments(params: PageCommentRequest, enabled: boolean) {
 export default function EssayPost({ essayPost }: { essayPost: EssayScoredResponse }) {
   const [showFullEssay, setShowFullEssay] = useState(false);
   const [showComments, setShowComments] = useState(false);
-  const [newComment, setNewComment] = useState("");
   const [openReactionDialog, setOpenReactionDialog] = useState(false);
   const [stared, setStared] = useState(false);
   const [reactionId, setReactionId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const commentMutation = useCommentMutation();
+
   const form = useForm<CreateCommentRequest>({
     resolver: zodResolver(createCommentRequestSchema),
-  });
-
-
-  const createReactionMutation = useMutation({
-    mutationFn: (data: { essayId: string }) => {
-      return api.interaction.createReaction({
-        body: {
-          targetId: data.essayId,
-          targetType: "ESSAY",
-          type: "STAR",
-        },
-      });
-    },
-    onSuccess: async (response) => {
-      switch (response.status) {
-        case 201:
-          toast.success("Starred essay successfully");
-          setReactionId(response.body.id);
-          console.log("reactionId", response.body.id);
-          break;
-        default:
-          toast.error("Save failed");
-      }
-    },
-    onError: (error) => {
-      toast.error("Failed to star essay");
+    defaultValues: {
+      essayId: essayPost.id,
+      parentId: null,
+      content: "",
     },
   });
+
+  const createReactionMutation = useReactionMutation();
+  const deleteReactionMutation = useDeleteReactionMutation();
 
   useEffect(() => {
     if (essayPost.reactedInfo?.isReacted) {
@@ -96,24 +77,6 @@ export default function EssayPost({ essayPost }: { essayPost: EssayScoredRespons
       setReactionId(null);
     }
   }, [essayPost.reactedInfo]);
-
-  const deleteReactionMutation = useMutation({
-    mutationFn: (id: string) => {
-      return api.interaction.deleteReaction({ params: { id } });
-    },
-    onSuccess: async (response) => {
-      switch (response.status) {
-        case 200:
-          toast.success(response.body.message);
-          break;
-        default:
-          toast.error("Save failed");
-      }
-    },
-    onError: (error) => {
-      toast.error("Failed to unstar essay");
-    },
-  });
 
   const {
     control,
@@ -146,28 +109,44 @@ export default function EssayPost({ essayPost }: { essayPost: EssayScoredRespons
       deleteReactionMutation.mutate(reactionId);
       setStared(false);
     } else {
-      createReactionMutation.mutate({ essayId: essayPost.id });
+      createReactionMutation.mutate({
+        targetId: essayPost.id,
+        targetType: "ESSAY",
+        type: "STAR",
+      },
+        {
+          onSuccess: (response: CommonReactionSchema) => {
+            toast.success("Starred essay successfully");
+            setReactionId(response.id);
+
+          },
+        });
       setStared(true);
     }
   };
 
-  const handleComment = () => {
-    if (newComment.trim()) {
+  const handleComment = (data: CreateCommentRequest) => {
+    console.log("handleComment", data.content);
+    if (data.content.trim()) {
       commentMutation.mutate(
+        data,
         {
-          essayId: essayPost.id,
-          content: newComment.trim(),
-          parentId: null,
-        },
-        {
-          onSuccess: (newCommentData) => {
-            setNewComment("");
-            setShowComments(true);
-            queryClient.invalidateQueries(["comments", essayPost.id]); // nếu dùng query key ["comments", essayId]
+          onSuccess: (response: CreateCommentResponse) => {
+            form.reset({ ...data, content: "" });
+            if (response.valid) {
+              setShowComments(true);
+              queryClient.invalidateQueries({
+                queryKey: ["comments", essayPost.id, null, null],
+              });
+              toast.success("your toxic level is " + response.message);
+            }
+            else {
+              toast.error("Your toxic level is " + response.message);
+            }
           }
           ,
           onError: (error) => {
-            console.error("Failed to post comment", error);
+            toast("failed to comment");
           },
         }
       );
@@ -255,7 +234,7 @@ export default function EssayPost({ essayPost }: { essayPost: EssayScoredRespons
                 disabled={createReactionMutation.isLoading || deleteReactionMutation.isLoading}
               >
                 <Star className={`h-4 w-4 ${stared ? "text-yellow-500" : "text-gray-400"}`} />
-                <span>{stared ? essayPost.stars + 1 : essayPost.stars}</span>
+                <span>{stared && essayPost.stars}</span>
               </Button>
 
               <Button
@@ -308,7 +287,7 @@ export default function EssayPost({ essayPost }: { essayPost: EssayScoredRespons
                       <CommentItem key={comment.id} comment={comment} />
                     ))}
                     {hasNextPage && (
-                      <div ref={loadMoreRef} className="flex justify-center py-4">
+                      <div ref={loadMoreRef} className="flex justify-center py-2">
                         <Skeleton className="h-6 w-6 rounded-full" />
                       </div>
                     )}
@@ -325,14 +304,15 @@ export default function EssayPost({ essayPost }: { essayPost: EssayScoredRespons
                   <div className="flex-1 flex items-center space-x-2">
                     <form onSubmit={handleSubmit(handleComment)} className="flex-1 flex items-center space-x-2">
                       <FormField
-                        name="newComment"
+                        name="content"
                         render={({ field }) => (
                           <FormItem className="flex-1">
                             <FormControl>
                               <Input
-                                {...field} // Thêm field để lấy dữ liệu từ form
+                                {...field}
                                 className="rounded-full bg-muted border-0 h-7 text-xs flex-1"
                                 placeholder="Write a comment..."
+                                required
                               />
                             </FormControl>
                             <FormMessage />
@@ -344,7 +324,6 @@ export default function EssayPost({ essayPost }: { essayPost: EssayScoredRespons
                         variant="ghost"
                         type="submit"
                         className="h-7 w-7"
-                        disabled={!newComment.trim()}
                       >
                         <Send className="h-4 w-4" />
                       </Button>

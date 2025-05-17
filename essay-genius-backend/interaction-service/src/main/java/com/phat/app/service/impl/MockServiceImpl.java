@@ -12,6 +12,7 @@ import com.phat.domain.model.TargetType;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import net.datafaker.Faker;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class MockServiceImpl implements MockService {
     CommentRepository commentRepository;
     ReactionRepository reactionRepository;
     EssayGrpcClient essayGrpcClient;
+    Faker faker = new Faker();
 
     static Random random = new Random();
 
@@ -42,52 +44,52 @@ public class MockServiceImpl implements MockService {
         // Tạo comments và reactions mẫu cho mỗi essay
         for (String essayId : essayIds) {
             int topLevelCommentCount = 2 + random.nextInt(1);
-//            for (int i = 0; i < topLevelCommentCount; i++) {
-//                Comment parent = interactionService.addComment(
-//                        essayId,
-//                        "Comment " + i + " on essay " + essayId,
-//                        null
-//                );
-//
-//                int childCommentCount = 1 + random.nextInt(2);
-//                int replyCount = 2 + random.nextInt(1);
-//                for (int a = 0; a < replyCount; a++) {
-//                    Comment child = interactionService.addComment(
-//                            essayId,
-//                            "Child comment " + a + " to comment " + parent.getId(),
-//                            parent.getId()
-//                    );
-//                    int reactionCount = 2 + random.nextInt(2);
-//                    for (int r = 0; r < reactionCount; r++) {
-//                        interactionService.addReaction(child.getId(), TargetType.COMMENT.name(), randomReactionType().name());
-//                    }
-//                    for (int j = 0; j < childCommentCount; j++) {
-//                        Comment child2 = interactionService.addComment(
-//                                essayId,
-//                                "Reply " + j + " to comment " + child.getId(),
-//                                child.getId()
-//                        );
-//                        int reactionCount2 = 2 + random.nextInt(2);
-//                        for (int r = 0; r < reactionCount; r++) {
-//                            interactionService.addReaction(child2.getId(), TargetType.COMMENT.name(), randomReactionType().name());
-//                        }
-//                    }
-//                }
-//                int reactionCount = 2 + random.nextInt(2);
-//                for (int r = 0; r < reactionCount; r++) {
-//                    interactionService.addReaction(parent.getId(), TargetType.COMMENT.name(), randomReactionType().name());
-//                }
-//            }
-//
-//            int essayReactionCount = 3 + random.nextInt(2);
-//            for (int r = 0; r < essayReactionCount; r++) {
-//                Reaction reaction = Reaction.builder()
-//                        .targetId(essayId)
-//                        .targetType(TargetType.ESSAY)
-//                        .reactionType(ReactionType.STAR)
-//                        .build();
-//                interactionService.addReaction(reaction.getTargetId(), reaction.getTargetType().name(), reaction.getReactionType().name());
-//            }
+            for (int i = 0; i < topLevelCommentCount; i++) {
+                Comment parent = interactionService.addCommentMock(
+                        essayId,
+                         faker.lorem().sentence(random.nextInt(5, 20))+" on essay " + essayId,
+                        null
+                );
+
+                int childCommentCount = 1 + random.nextInt(2);
+                int replyCount = 2 + random.nextInt(1);
+                for (int a = 0; a < replyCount; a++) {
+                    Comment child = interactionService.addCommentMock(
+                            essayId,
+                            faker.lorem().sentence(random.nextInt(5, 20)) + a + " to comment " + parent.getId(),
+                            parent.getId()
+                    );
+                    int reactionCount = 1;
+                    for (int r = 0; r < reactionCount; r++) {
+                        interactionService.addReaction(child.getId(), TargetType.COMMENT.name(), randomReactionType().name());
+                    }
+                    for (int j = 0; j < childCommentCount; j++) {
+                        Comment child2 = interactionService.addCommentMock(
+                                essayId,
+                                faker.lorem().sentence(random.nextInt(5, 20)) + j + " to comment " + child.getId(),
+                                child.getId()
+                        );
+                        int reactionCount2 = 1;
+                        for (int r = 0; r < reactionCount; r++) {
+                            interactionService.addReaction(child2.getId(), TargetType.COMMENT.name(), randomReactionType().name());
+                        }
+                    }
+                }
+                int reactionCount = 1;
+                for (int r = 0; r < reactionCount; r++) {
+                    interactionService.addReaction(parent.getId(), TargetType.COMMENT.name(), randomReactionType().name());
+                }
+            }
+
+            int essayReactionCount = 1;
+            for (int r = 0; r < essayReactionCount; r++) {
+                Reaction reaction = Reaction.builder()
+                        .targetId(essayId)
+                        .targetType(TargetType.ESSAY)
+                        .reactionType(ReactionType.STAR)
+                        .build();
+                interactionService.addReaction(reaction.getTargetId(), reaction.getTargetType().name(), reaction.getReactionType().name());
+            }
         }
     }
 

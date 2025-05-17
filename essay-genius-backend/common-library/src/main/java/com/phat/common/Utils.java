@@ -2,7 +2,9 @@ package com.phat.common;
 
 import io.grpc.Context;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +16,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -89,6 +92,13 @@ public class Utils {
         }
 
         return authentication.getName();
+    }
+    public static void mockSecurityContext(String userId) {
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(userId, null, List.of());
+        context.setAuthentication(auth);
+        SecurityContextHolder.setContext(context);
     }
 
 }

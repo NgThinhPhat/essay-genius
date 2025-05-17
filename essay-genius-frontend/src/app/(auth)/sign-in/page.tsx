@@ -11,8 +11,6 @@ import {
   signInBodySchema,
   SignInBodySchema,
 } from "@/lib/schemas/auth.schema";
-import { useSignInMutation } from "@/hooks/mutations/auth.mutation";
-import { mapFieldErrorToFormError } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +29,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { api } from "@/lib/api";
 import { setCookie } from "cookies-next/client";
@@ -42,7 +40,7 @@ type FormValues = z.infer<typeof signInBodySchema>;
 
 export default function SignIn() {
   const router = useRouter();
-
+  const queryClient = useQueryClient();
   const form = useForm<SignInBodySchema>({
     resolver: zodResolver(signInBodySchema),
     defaultValues: {
@@ -70,14 +68,28 @@ export default function SignIn() {
           setCookie(COOKIE_KEY_REFRESH_TOKEN, refreshToken, {
             httpOnly: false,
           });
+          await queryClient.invalidateQueries({ queryKey: ['current_user'] });
           toast("Login successful");
           router.push("/");
           break;
         default:
-          form.setError("root", {
-            type: String(response.status),
-            message: "Login failed",
-          });
+          const { errors, message } = response.body;
+          if (errors) {
+            Object.entries(errors).forEach(([field, message]) => {
+              form.setError(field as keyof FormValues, {
+                type: "server",
+                message: String(message),
+              });
+            });
+            return;
+          }
+
+          if (message) {
+            form.setError("root", {
+              type: String(response.status),
+              message,
+            });
+          }
       }
     },
     onError: () => {
@@ -147,7 +159,11 @@ export default function SignIn() {
                   </FormItem>
                 )}
               />
-
+              {form.formState.errors.root && (
+                <p className="text-sm text-red-500">
+                  {form.formState.errors.root.message}
+                </p>
+              )}
               <Button type="submit" className="w-full" disabled={mutation.isPending}>
                 {mutation.isPending ? "Signing in..." : "Sign In"}
               </Button>

@@ -74,8 +74,12 @@ public class ListEssayRequest extends AbstractMongoPageableRequest<EssaySubmissi
       criteriaList.add(Criteria.where("isDeleted").is(isDeleted));
     }
 
-    if (ownByCurrentUser != null && ownByCurrentUser) {
-      criteriaList.add(Criteria.where("createdBy").ne(getCurrentUser()));
+    if (ownByCurrentUser != null) {
+      if (ownByCurrentUser) {
+        criteriaList.add(Criteria.where("createdBy").is(getCurrentUser()));
+      } else {
+        criteriaList.add(Criteria.where("createdBy").nin(Arrays.asList(getCurrentUser(), null)));
+      }
     }
 
     return criteriaList.isEmpty()
