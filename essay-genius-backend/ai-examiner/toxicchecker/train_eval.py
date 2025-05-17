@@ -40,9 +40,17 @@ def train_model():
     def compute_metrics(eval_pred):
         logits, labels = eval_pred
         preds = np.argmax(logits, axis=-1)
+
+        accuracy = accuracy_score(labels, preds)
+        f1 = f1_score(labels, preds, average="weighted")
+
+        # In độ chính xác và F1-score
+        print(f"Accuracy: {accuracy:.4f}")
+        print(f"F1-Score: {f1:.4f}")
+
         return {
-            "accuracy": accuracy_score(labels, preds),
-            "f1": f1_score(labels, preds, average="weighted"),
+            "accuracy": accuracy,
+            "f1": f1,
         }
 
     training_args = TrainingArguments(
@@ -67,3 +75,4 @@ def train_model():
 
     trainer.train()
     trainer.save_model(output_dir)
+
