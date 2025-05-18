@@ -1,6 +1,6 @@
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
-import { userInfoSchema } from './essay.constract';
+import { uploadFileBodySchema, userInfoSchema } from './essay.constract';
 
 const c = initContract();
 
@@ -162,5 +162,18 @@ export const authContract = c.router({
         email: z.string()
       })
     }
-  }
+  },
+
+  updateProfile: {
+    method: "PUT",
+    path: "/identity/users/update-profile/:userId",
+    body: userInfoSchema.omit({
+      email: true,
+      id: true,
+      avatar: true,
+    }),
+    responses: {
+      200: userInfoSchema,
+    },
+  },
 });

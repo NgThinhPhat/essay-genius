@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -11,36 +11,86 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { ArrowLeft, Upload } from "lucide-react"
 import Link from "next/link"
+import { useCurrentUser } from "@/hooks/use-current-user"
+import { useUploadAvatarMutation } from "@/hooks/mutations/auth.mutation"
+import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { FormProvider, useForm } from "react-hook-form"
+import { UserInfo } from "@/constracts/essay.constract"
+import { toast } from "sonner"
+import { useQueryClient } from "@tanstack/react-query"
+import { useUpdateProfileMutation } from "@/hooks/mutations/essay.mutation"
 
 export default function EditProfile() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    name: "John Doe",
-    email: "john.doe@example.com",
-    bio: "IELTS teacher and examiner with 10+ years of experience.",
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-    emailNotifications: true,
-    publicProfile: true,
-  })
+  const inputFileRef = useRef<HTMLInputElement | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const { data: user, isLoading } = useCurrentUser();
+  const form = useForm<UserInfo>({
+    defaultValues: {
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      email: user?.email || "",
+      bio: user?.bio || "",
+    },
+  });
+  const { control, handleSubmit } = form;
 
-  const handleChange = (field: string, value: string | boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
-  }
+  const avatarForm = useForm<{ avatar: File | null }>({
+    defaultValues: { avatar: null },
+  });
+  const { handleSubmit: handleSubmitAvatar, setValue: setAvatarValue, watch: watchAvatar } = avatarForm;
+  const selectedFile = watchAvatar("avatar");
+  const uploadAvatarMutation = useUploadAvatarMutation();
+  const queryClient = useQueryClient();
 
-  const handleSaveProfile = () => {
-    setIsLoading(true)
+  const onUploadAvatar = (data: { avatar: File | null }) => {
+    if (!data.avatar) return;
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      // In a real app, redirect to profile page or show success message
-    }, 1500)
-  }
+    uploadAvatarMutation.mutate(data.avatar, {
+      onSuccess: () => {
+        toast.success("Upload success!");
+        queryClient.invalidateQueries({ queryKey: ['current_user'] });
+      },
+      onError: () => {
+        toast.error("Upload failed");
+      },
+    });
+  };
+
+  const openFileDialog = () => {
+    inputFileRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const updateProfileMutation = useUpdateProfileMutation();
+
+  const handleSaveProfile = (values: {
+    firstName: string;
+    lastName: string;
+    bio?: string;
+  }) => {
+    if (!user?.id) return;
+
+    updateProfileMutation.mutate(
+      {
+        userId: user.id,
+        body: values,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Profile updated successfully");
+          queryClient.invalidateQueries({ queryKey: ["me"] });
+        },
+        onError: () => {
+          toast.error("Failed to update profile");
+        },
+      }
+    );
+  };
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-4xl">
@@ -66,57 +116,117 @@ export default function EditProfile() {
               <CardDescription>Update your personal information and public profile</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex flex-col items-center space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src="/placeholder.svg?height=96&width=96" alt="Profile" />
-                  <AvatarFallback>JD</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col items-center sm:items-start">
-                  <Button variant="outline" size="sm" className="mb-2">
-                    <Upload className="mr-2 h-4 w-4" />
-                    Change Photo
-                  </Button>
-                  <p className="text-xs text-muted-foreground">JPG, GIF or PNG. 1MB max.</p>
-                </div>
-              </div>
+              <FormProvider {...avatarForm}>
+                <form onSubmit={handleSubmitAvatar(onUploadAvatar)}>
+                  <div className="flex flex-col items-center space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
+                    <Avatar className="h-24 w-24">
+                      <AvatarImage
+                        src={user?.avatar || "/placeholder.svg"}
+                        alt={`${user?.firstName} ${user?.lastName}`}
+                        className="rounded-full object-cover"
+                      />
+                      <AvatarFallback className="text-lg">
+                        {user?.firstName.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
 
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" value={formData.name} onChange={(e) => handleChange("name", e.target.value)} />
+                    <div className="flex flex-col items-center sm:items-start space-y-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        ref={inputFileRef}
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            const file = e.target.files[0];
+                            setAvatarValue("avatar", file);
+                          }
+                        }}
+                      />
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() => inputFileRef.current?.click()}
+                        size="sm"
+                        className="mb-2 flex items-center"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        {selectedFile ? selectedFile.name : "Select Avatar"}
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        type="submit"
+                        disabled={uploadAvatarMutation.isLoading || !selectedFile}
+                      >
+                        {uploadAvatarMutation.isLoading ? "Uploading..." : "Change Avatar"}
+                      </Button>
+
+                      <p className="text-xs text-muted-foreground">JPG, GIF or PNG. 1MB max.</p>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleChange("email", e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    placeholder="Tell us about yourself"
-                    className="min-h-[100px]"
-                    value={formData.bio}
-                    onChange={(e) => handleChange("bio", e.target.value)}
+                </form>
+              </FormProvider>
+
+              <FormProvider {...form}>
+                <form onSubmit={handleSubmit(handleSaveProfile)} className="space-y-4">
+                  <FormField
+                    control={control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <div>
+                        <Label htmlFor="firstName">First Name</Label>
+                        <Input id="firstName" {...field} />
+                      </div>
+                    )}
                   />
-                  <p className="text-xs text-muted-foreground">This will be displayed on your public profile.</p>
-                </div>
-              </div>
+
+                  <FormField
+                    control={control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <div>
+                        <Label htmlFor="lastName">Last Name</Label>
+                        <Input id="lastName" {...field} />
+                      </div>
+                    )}
+                  />
+
+                  <FormField
+                    control={control}
+                    name="bio"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Bio</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            id="bio"
+                            className="min-h-[100px]"
+                            value={field.value ?? ""}
+                            onChange={(e) => field.onChange(e.target.value)}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          This will be displayed on your public profile.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" >
+                    Save
+                  </Button>
+                </form>
+              </FormProvider>
             </CardContent>
-            <CardFooter>
-              <Button onClick={handleSaveProfile} disabled={isLoading}>
-                {isLoading ? "Saving..." : "Save Changes"}
-              </Button>
-            </CardFooter>
           </Card>
         </TabsContent>
 
+        {/* Security & Privacy */}
         <TabsContent value="security">
           <div className="grid gap-6 md:grid-cols-2">
             <Card>
@@ -130,8 +240,8 @@ export default function EditProfile() {
                   <Input
                     id="current-password"
                     type="password"
-                    value={formData.currentPassword}
-                    onChange={(e) => handleChange("currentPassword", e.target.value)}
+                  // value={formData.currentPassword}
+                  // onChange={(e) => handleChange("currentPassword", e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -139,8 +249,8 @@ export default function EditProfile() {
                   <Input
                     id="new-password"
                     type="password"
-                    value={formData.newPassword}
-                    onChange={(e) => handleChange("newPassword", e.target.value)}
+                  // value={formData.newPassword}
+                  // onChange={(e) => handleChange("newPassword", e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -148,19 +258,19 @@ export default function EditProfile() {
                   <Input
                     id="confirm-password"
                     type="password"
-                    value={formData.confirmPassword}
-                    onChange={(e) => handleChange("confirmPassword", e.target.value)}
+                  // value={formData.confirmPassword}
+                  // onChange={(e) => handleChange("confirmPassword", e.target.value)}
                   />
                 </div>
               </CardContent>
               <CardFooter>
                 <Button
-                  disabled={
-                    !formData.currentPassword ||
-                    !formData.newPassword ||
-                    formData.newPassword !== formData.confirmPassword ||
-                    isLoading
-                  }
+                // disabled={
+                //   !formData.currentPassword ||
+                //   !formData.newPassword ||
+                //   formData.newPassword !== formData.confirmPassword ||
+                //   isLoading
+                // }
                 >
                   {isLoading ? "Updating..." : "Update Password"}
                 </Button>
@@ -173,30 +283,30 @@ export default function EditProfile() {
                 <CardDescription>Manage your privacy and notification preferences</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="email-notifications">Email Notifications</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receive email notifications about your essays and comments
-                    </p>
-                  </div>
-                  <Switch
-                    id="email-notifications"
-                    checked={formData.emailNotifications}
-                    onCheckedChange={(checked) => handleChange("emailNotifications", checked)}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="public-profile">Public Profile</Label>
-                    <p className="text-sm text-muted-foreground">Allow others to view your profile and public essays</p>
-                  </div>
-                  <Switch
-                    id="public-profile"
-                    checked={formData.publicProfile}
-                    onCheckedChange={(checked) => handleChange("publicProfile", checked)}
-                  />
-                </div>
+                {/* <div className="flex items-center justify-between"> */}
+                {/*   <div className="space-y-0.5"> */}
+                {/*     <Label htmlFor="email-notifications">Email Notifications</Label> */}
+                {/*     <p className="text-sm text-muted-foreground"> */}
+                {/*       Receive email notifications about your essays and comments */}
+                {/*     </p> */}
+                {/*   </div> */}
+                {/*   <Switch */}
+                {/*     id="email-notifications" */}
+                {/*     checked={formData.emailNotifications} */}
+                {/*     onCheckedChange={(checked) => handleChange("emailNotifications", checked)} */}
+                {/*   /> */}
+                {/* </div> */}
+                {/* <div className="flex items-center justify-between"> */}
+                {/*   <div className="space-y-0.5"> */}
+                {/*     <Label htmlFor="public-profile">Public Profile</Label> */}
+                {/*     <p className="text-sm text-muted-foreground">Allow others to view your profile and public essays</p> */}
+                {/*   </div> */}
+                {/*   <Switch */}
+                {/*     id="public-profile" */}
+                {/*     checked={formData.publicProfile} */}
+                {/*     onCheckedChange={(checked) => handleChange("publicProfile", checked)} */}
+                {/*   /> */}
+                {/* </div> */}
               </CardContent>
               <CardFooter>
                 <Button onClick={handleSaveProfile} disabled={isLoading}>

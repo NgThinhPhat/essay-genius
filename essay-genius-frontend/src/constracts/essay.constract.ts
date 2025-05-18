@@ -3,6 +3,14 @@ import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
 
 const c = initContract();
+export const uploadFileBodySchema = z.object({
+  file: z
+    .instanceof(File)
+    .refine((mFile) => mFile.size < 20 * 2 * 1024 * 1024, {
+      message: "File size should be less than 20 MB",
+    }),
+});
+export type UploadFileBodySchema = z.infer<typeof uploadFileBodySchema>;
 
 // =================== SCHEMAS ===================
 
@@ -103,9 +111,11 @@ export const userInfoSchema = z.object({
   email: z.string().email(),
   firstName: z.string(),
   lastName: z.string(),
-  avatar: z.string().nullable().optional(), // nếu có thể null
-  bio: z.string().nullable().optional(), // nếu có thể null
+  avatar: z.string().nullable().optional(),
+  bio: z.string().nullable().optional(),
 });
+export type UserInfo = z.infer<typeof userInfoSchema>;
+
 export const reactedInfoSchema = z.object({
   isReacted: z.boolean(),
   reactionId: z.string().nullable().optional(),

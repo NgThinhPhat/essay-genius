@@ -75,13 +75,25 @@ public class UserServiceImpl implements UserService {
         user.setAvatar(url);
         return user;
     }
-
     @Override
     public UserInfo updateUser(String userId, UpdateUserRequest request) {
         log.debug("Updating user with userId: {}", userId);
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         log.debug("User found: {}", user);
-        user.setAvatar(request.getAvatar());
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setBio(request.getBio());
+        User updatedUser = userRepository.save(user);
+        log.info("User with userId: {} updated successfully", updatedUser.getId());
+        return userMapper.toUserInfo(updatedUser);
+    }
+
+    @Override
+    public UserInfo updateAvatar(String userId, String avatarUrl) {
+        log.debug("Updating user with userId: {}", userId);
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        log.debug("User found: {}", user);
+        user.setAvatar(avatarUrl);
         User updatedUser = userRepository.save(user);
         log.info("User with userId: {} updated successfully", updatedUser.getId());
         return userMapper.toUserInfo(updatedUser);

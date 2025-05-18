@@ -21,4 +21,7 @@ public interface UserService {
     User getCurrentUserInfo();
 
     UserInfo updateUser(String userId, UpdateUserRequest request);
+
+    UserInfo updateAvatar(String userId, String avaterUrl);
+
 }

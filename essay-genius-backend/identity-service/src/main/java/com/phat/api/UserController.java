@@ -12,10 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -49,6 +46,16 @@ public class UserController {
             throw new FileException(CAN_NOT_STORE_FILE, HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
         }
         return ResponseEntity.ok(
-                userService.updateUser(userId, UpdateUserRequest.builder().avatar(fileName).build()));
+                userService.updateAvatar(userId, fileName));
+    }
+
+    @PutMapping("/update-profile/{userId}")
+    public ResponseEntity<UserInfo> updateProfile(@PathVariable String userId,@RequestBody UpdateUserRequest updateUserRequest) {
+        String currentUserId = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!currentUserId.equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        UserInfo updatedUser = userService.updateUser(userId, updateUserRequest);
+        return ResponseEntity.ok(updatedUser);
     }
 }

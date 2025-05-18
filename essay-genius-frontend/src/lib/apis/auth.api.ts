@@ -15,6 +15,7 @@ import {
   ForgotPasswordResponseSchema,
 } from "../schemas/auth.schema";
 import { restClient } from "../rest-client";
+import { UserInfo } from "@/constracts/essay.constract";
 
 export async function signUp(
   data: SignUpBodySchema,
@@ -164,5 +165,22 @@ export async function resetPassword(
       ...config,
     }
   );
+  return response.data;
+}
+
+export async function uploadAvatarApi(file: File): Promise<UserInfo> {
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  const response = await restClient.post<UserInfo>(
+    "/identity/users/upload-avatar",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
   return response.data;
 }

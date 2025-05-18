@@ -6,6 +6,8 @@ import lombok.Data;
 @Data
 @Builder
 public class UpdateUserRequest {
-    private String avatar;
+    private String firstName;
+    private String lastName;
+    private String bio;
 }
 

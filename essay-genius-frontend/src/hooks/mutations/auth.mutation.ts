@@ -30,13 +30,16 @@ import {
   verifyEmail,
   sendMailForgotPassword,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  uploadAvatarApi
 } from "@/lib/apis/auth.api";
 import { isAxiosError } from "axios";
 import { useCurrentUserActions } from "../current-user-store";
 import { useTokenActions } from "../token-store";
 import { deleteCookie } from "cookies-next";
 import { api } from "@/lib/api";
+import { UploadFileBodySchema, UserInfo } from "@/constracts/essay.constract";
+import { toast } from "sonner";
 
 export function useSignUpMutation() {
   return useMutation<
@@ -166,3 +169,19 @@ export function useSignOutMutation() {
     },
   });
 }
+
+
+export function useUploadAvatarMutation() {
+  return useMutation({
+    mutationFn: (avatar: File) => uploadAvatarApi(avatar),
+
+    onSuccess: () => {
+      toast.success("Avatar uploaded successfully!");
+    },
+
+    onError: () => {
+      toast.error("Failed to upload avatar");
+    },
+  });
+}
+
