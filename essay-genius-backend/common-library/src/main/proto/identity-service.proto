@@ -36,6 +36,7 @@ message GetUserInfoResponse {
   string lastName = 3;
   string avatar = 4;
   string email = 5;
+  string bio = 6;
 }
 
 message GetUserIdsResponse {

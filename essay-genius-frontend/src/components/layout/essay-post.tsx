@@ -118,7 +118,7 @@ export default function EssayPost({ essayPost }: { essayPost: EssayScoredRespons
           onSuccess: (response: CommonReactionSchema) => {
             toast.success("Starred essay successfully");
             setReactionId(response.id);
-
+            essayPost.stars++;
           },
         });
       setStared(true);

@@ -99,6 +99,7 @@ export const userInfoSchema = z.object({
   firstName: z.string(),
   lastName: z.string(),
   avatar: z.string().nullable().optional(), // nếu có thể null
+  bio: z.string().nullable().optional(), // nếu có thể null
 });
 export const reactedInfoSchema = z.object({
   isReacted: z.boolean(),

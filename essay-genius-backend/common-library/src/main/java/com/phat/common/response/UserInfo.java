@@ -19,4 +19,6 @@ public class UserInfo {
     String lastName;
 
     String avatar;
+
+    String bio;
 }

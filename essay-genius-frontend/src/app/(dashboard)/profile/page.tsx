@@ -39,6 +39,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import Link from "next/link"
+import { useCurrentUser } from "@/hooks/use-current-user"
 
 export default function Profile() {
   // Mock data for user essays
@@ -115,6 +116,15 @@ export default function Profile() {
   const [newComment, setNewComment] = useState("")
   const [showComments, setShowComments] = useState(true)
 
+  const { data: currentUser, isLoading, isError } = useCurrentUser();
+
+  if (isLoading) {
+    return <div className="p-8">Loading profile...</div>;
+  }
+
+  if (isError) {
+    return <div className="p-8 text-red-500">Failed to load user data.</div>;
+  }
   const deleteEssay = (id: number) => {
     setUserEssays(userEssays.filter((essay) => essay.id !== id))
     if (selectedEssay === id) {
@@ -176,17 +186,33 @@ export default function Profile() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="md:col-span-1 h-fit">
           <CardContent className="p-4 space-y-4">
-            <div className="flex items-center space-x-3">
+            {/* Avatar & Info */}
+            <div className="flex flex-col items-center space-y-2">
               <Avatar style={{ width: "150px", height: "200px" }}>
-                <AvatarImage src="/placeholder.svg?height=48&width=48" alt="Profile" />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarImage
+                  src={currentUser?.avatar ?? "/placeholder.svg"}
+                  alt={currentUser?.firstName ?? "User Avatar"}
+                  className="rounded-md"
+                />
+                <AvatarFallback>
+                  {currentUser?.firstName?.charAt(0) ?? "U"}
+                </AvatarFallback>
               </Avatar>
-              <div>
-                <h3 className="font-medium">John Doe</h3>
-                <p className="text-xs text-muted-foreground">john.doe@example.com</p>
+
+              <div className="text-center">
+                <h2 className="text-xl font-semibold">{currentUser?.firstName ?? "Anonymous"} {currentUser?.lastName}</h2>
+                <p className="text-muted-foreground text-sm">{currentUser?.email}</p>
               </div>
             </div>
 
+            {/* Bio section */}
+            {currentUser?.bio && (
+              <div className="bg-muted p-3 rounded-md text-sm text-muted-foreground whitespace-pre-line">
+                {currentUser.bio}
+              </div>
+            )}
+
+            {/* Stats */}
             <div className="grid grid-cols-3 gap-2 text-center text-sm">
               <div className="bg-muted p-2 rounded-md">
                 <div className="font-medium">{userEssays.length}</div>
@@ -204,12 +230,12 @@ export default function Profile() {
               </div>
             </div>
 
+            {/* Edit Button */}
             <Button variant="outline" size="sm" className="w-full" asChild>
-              <Link href="/profile/edit">Edit Profile</Link>
+              <Link href="/profile/edit">Edit Profile & Setting</Link>
             </Button>
           </CardContent>
         </Card>
-
         <Card className="md:col-span-3">
           <CardHeader>
             <CardTitle>Your Essays</CardTitle>

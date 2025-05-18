@@ -56,13 +56,16 @@ public class IdentityServiceGrpcServer extends IdentityServiceGrpc.IdentityServi
     public void getUserInfo(GetUserInfoRequest request,
                                 StreamObserver<GetUserInfoResponse> responseObserver) {
 
-        GetUserInfoResponse.Builder responseBuilder = GetUserInfoResponse.newBuilder();
         try {
+
+
             User user = userService.findById(request.getUserId());
-            responseBuilder.setUserId(user.getId());
-            responseBuilder.setEmail(user.getEmail());
-            responseBuilder.setFirstName(user.getFirstName());
-            responseBuilder.setLastName(user.getLastName());
+            GetUserInfoResponse.Builder responseBuilder = GetUserInfoResponse.newBuilder()
+                    .setUserId(user.getId())
+                    .setEmail(user.getEmail())
+                    .setFirstName(user.getFirstName())
+                    .setLastName(user.getLastName())
+                    .setBio(user.getBio());
 
             String url = minioClientService.getObjectUrl("default-avatar-url.png" , "user-avatars");
             try {

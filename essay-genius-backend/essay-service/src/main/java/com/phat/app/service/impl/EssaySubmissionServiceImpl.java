@@ -87,7 +87,6 @@ public class EssaySubmissionServiceImpl implements com.phat.app.service.EssaySub
                     UserInfo userInfo = identityServiceGrpcClient.getUserInfo(submission.getCreatedBy());
                     InteractionCountResponse interaction = interactionServiceGrpcClient.getInteractionCount(submission.getId());
 
-                    // Mapping to response
                     return EssayScoredResponse.builder()
                             .id(submission.getId())
                             .user(userInfo)

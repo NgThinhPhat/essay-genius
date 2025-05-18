@@ -64,6 +64,7 @@ public class IdentityServiceGrpcClient {
                     .lastName(response.getLastName())
                     .avatar(response.getAvatar())
                     .email(response.getEmail())
+                    .bio(response.getBio())
                     .build();
         } catch (Exception e) {
             log.info("[{}]: Error occurred while getting user info: {}", "COMMON-SERVICE", e.getMessage());

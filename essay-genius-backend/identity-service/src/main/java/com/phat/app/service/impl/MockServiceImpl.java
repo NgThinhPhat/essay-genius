@@ -42,6 +42,9 @@ public class MockServiceImpl implements MockService {
                 .avatar("image_20250517_132027_e004037b-f8ab-4042-8c0c-6eb01223d818.jpeg")
                 .password(passwordEncoder.encode("phat12"))
                 .enabled(true)
+                .bio("I am a software engineer with a passion for technology and innovation." +
+                        " I love coding and building amazing applications." +
+                        " In my free time, I enjoy watching movie.")
                 .build());
         for (int i = 0; i < 50; i++) {
             String email = faker.internet().emailAddress();
@@ -62,6 +65,7 @@ public class MockServiceImpl implements MockService {
                     .lastName(lastName)
                     .avatar(avatar)
                     .enabled(true)
+                    .bio(faker.lorem().sentence(faker.random().nextInt(1,4)))
                     .password(passwordEncoder.encode("password"))
                     .build());
         }

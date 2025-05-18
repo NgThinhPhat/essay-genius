@@ -36,6 +36,9 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column
+    private String bio;
+
     @Column(nullable = false)
     private boolean enabled;
 
