@@ -5,6 +5,7 @@ import com.phat.api.model.response.EssayTaskTwoScoreResponse;
 import com.phat.app.service.MockService;
 
 import com.phat.common.service.IdentityServiceGrpcClient;
+import com.phat.domain.enums.Visibility;
 import com.phat.domain.irepository.EssaySubmissionRepository;
 import com.phat.domain.model.EssaySubmission;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class MockServiceImpl implements MockService {
     public void mock() {
         List<String> userIds = identityServiceGrpcClient.getUserIds();
 
-        for (int i = 1; i <= 200; i++) {
+        for (int i = 1; i <= 1000; i++) {
             String randomUserId = userIds.get(faker.random().nextInt(userIds.size()));
             mockSecurityContext(randomUserId);
 
@@ -53,6 +54,7 @@ public class MockServiceImpl implements MockService {
                     .essayText(faker.lorem().paragraph(50))
                     .band(Math.floor(randomScores.getOverallBand()))
                     .essayTaskTwoScoreResponse(scoreWrapper)
+                    .visibility(Visibility.values()[faker.random().nextInt(Visibility.values().length)])
                     .build();
             submission.setCreatedAt(Date.from(faker.timeAndDate().past(60, TimeUnit.DAYS)));
             essaySubmissionRepository.save(submission);

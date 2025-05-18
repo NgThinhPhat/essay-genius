@@ -97,6 +97,7 @@ public class EssaySubmissionServiceImpl implements com.phat.app.service.EssaySub
                             .stars(interaction.reactionCount())
                             .comments(interaction.commentCount())
                             .reactedInfo(interaction.reactedInfo())
+                            .visibility(submission.getVisibility())
                             .build();
                 })
                 .toList();

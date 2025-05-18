@@ -84,7 +84,7 @@ export const listEssayRequestSchema = pageableRequestSchema.extend({
   promptText: z.string().optional(),
   bandFrom: z.number().min(0).max(9).optional(),
   bandTo: z.number().min(0).max(9).optional(),
-  visibility: z.enum(["PUBLIC", "PRIVATE", "FRIENDS"]).optional(),
+  visibility: z.enum(["PUBLIC", "PRIVATE"]).optional(),
   createdBy: z.string().optional(),
   createdAtFrom: z.string().datetime().optional(),
   createdAtTo: z.string().datetime().optional(),
@@ -115,7 +115,8 @@ export const essayScoredResponseSchema = z.object({
   createdAt: z.string(),
   stars: z.number(),
   comments: z.number(),
-  reactedInfo: reactedInfoSchema
+  reactedInfo: reactedInfoSchema,
+  visibility: z.enum(["PUBLIC", "PRIVATE"]),
 });
 export type EssayScoredResponse = z.infer<typeof essayScoredResponseSchema>;
 
