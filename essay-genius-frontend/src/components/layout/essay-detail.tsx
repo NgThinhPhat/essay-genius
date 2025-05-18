@@ -8,6 +8,7 @@ import { EssayScoredResponse } from "@/constracts/essay.constract"
 import { formatDistanceToNow } from "date-fns"
 import { CommentList } from "./comment-list"
 import { ReplyInput } from "./reply-input"
+import { useGetEssay } from "@/hooks/mutations/essay.mutation"
 
 interface EssayDetailProps {
   key: string
@@ -28,6 +29,12 @@ export function EssayDetail({
   showComments,
   setShowComments,
 }: EssayDetailProps) {
+
+  const { data, isLoading, error } = useGetEssay(essay.id);
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Failed to load essay.</div>;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div className="md:col-span-2">
@@ -125,34 +132,28 @@ export function EssayDetail({
             </div>
 
             <div className="space-y-4">
-              <ScoreDetail title="Task Response" score={7.5} />
-              <ScoreDetail title="Coherence & Cohesion" score={7.0} />
-              <ScoreDetail title="Lexical Resource" score={8.0} />
-              <ScoreDetail title="Grammatical Range & Accuracy" score={7.5} />
+              <ScoreDetail title="Task Response"
+                score={data?.essayTaskTwoScoreResponse.result.scores.taskResponse.band ?? 0} />
+              <ScoreDetail title="Coherence & Cohesion" score={data?.essayTaskTwoScoreResponse.result.scores.coherenceAndCohesion.band ?? 0} />
+              <ScoreDetail title="Lexical Resource" score={data?.essayTaskTwoScoreResponse.result.scores.lexicalResource.band ?? 0} />
+              <ScoreDetail title="Grammatical Range & Accuracy" score={data?.essayTaskTwoScoreResponse.result.scores.grammaticalRangeAndAccuracy.band ?? 0} />
             </div>
 
             <div className="bg-muted p-3 rounded-md">
               <h3 className="font-medium mb-2">Feedback</h3>
               <p className="text-sm">
-                Your essay demonstrates a good understanding of the topic with clear arguments. The organization is
-                logical, though some transitions could be improved. You use a wide range of vocabulary with occasional
-                inaccuracies. Your grammar is generally well-controlled with some complex structures. To improve, focus
-                on developing your ideas more fully and using more sophisticated connecting phrases.
+                {data?.essayTaskTwoScoreResponse.result.overallFeedback || "No feedback available."}
               </p>
             </div>
 
             <div className="space-y-2">
               <h3 className="font-medium">Improvement Tips</h3>
               <ul className="list-disc pl-5 space-y-2">
-                <li className="text-sm text-muted-foreground">
-                  Provide more specific examples to support your main points.
-                </li>
-                <li className="text-sm text-muted-foreground">
-                  Use a wider range of cohesive devices to improve the flow between paragraphs.
-                </li>
-                <li className="text-sm text-muted-foreground">
-                  Incorporate more sophisticated vocabulary to demonstrate a broader lexical range.
-                </li>
+                {data?.essayTaskTwoScoreResponse.result.improvementTips.map((tip, index) => (
+                  <li key={index} className="text-sm text-muted-foreground">
+                    {tip}
+                  </li>
+                ))}
               </ul>
             </div>
 

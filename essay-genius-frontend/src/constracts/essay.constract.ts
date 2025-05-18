@@ -14,7 +14,7 @@ export const correctionSchema = z.object({
 export type Correction = z.infer<typeof correctionSchema>;
 
 export const scoreDetailSchema = z.object({
-  band: z.number().int(),
+  band: z.number(),
   explanation: z.string(),
 });
 export type ScoreDetail = z.infer<typeof scoreDetailSchema>;
@@ -62,6 +62,11 @@ export const essaySaveRequestSchema = z.object({
 });
 export type EssaySaveRequestSchema = z.infer<typeof essaySaveRequestSchema>;
 
+export const essayDetailSchema = essaySaveRequestSchema.extend({
+  band: z.number(),
+});
+export type EssayDetail = z.infer<typeof essayDetailSchema>;
+
 export const essayResponseWrapperStringSchema = z.object({
   valid: z.boolean(),
   result: z.string(),
@@ -78,7 +83,7 @@ export type CommonResponse = z.infer<typeof commonResponseSchema>;
 
 // Replace z.any() with real schema if available
 export const essaySaveResponseSchema = z.any();
-export type essaySaveResponseSchema = z.infer<typeof essaySaveResponseSchema>;
+export type EssaySaveResponseSchema = z.infer<typeof essaySaveResponseSchema>;
 
 export const listEssayRequestSchema = pageableRequestSchema.extend({
   promptText: z.string().optional(),
@@ -174,7 +179,7 @@ export const essayContract = c.router({
     path: '/essay/get-essay/:id',
     pathParams: z.object({ id: z.string() }),
     responses: {
-      200: essaySaveResponseSchema,
+      200: essayDetailSchema,
     },
   },
   deleteEssay: {
