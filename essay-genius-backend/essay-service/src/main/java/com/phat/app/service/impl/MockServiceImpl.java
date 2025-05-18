@@ -41,7 +41,7 @@ public class MockServiceImpl implements MockService {
     public void mock() {
         List<String> userIds = identityServiceGrpcClient.getUserIds();
 
-        for (int i = 1; i <= 1000; i++) {
+        for (int i = 1; i <= 100; i++) {
             String randomUserId = userIds.get(faker.random().nextInt(userIds.size()));
             mockSecurityContext(randomUserId);
 

@@ -4,6 +4,7 @@ import { Button } from "../ui/button"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle, AlertDialogTrigger } from "@radix-ui/react-alert-dialog"
 import { AlertDialogFooter, AlertDialogHeader } from "../ui/alert-dialog"
 import { EssayScoredResponse } from "@/constracts/essay.constract"
+import { formatDistanceToNow } from "date-fns"
 interface EssayItemProps {
   essay: EssayScoredResponse
   onView: () => void
@@ -17,7 +18,10 @@ export function EssayItem({ essay, onView, onDelete }: EssayItemProps) {
         <div className="flex items-center justify-between">
           <div>
             <div className="font-medium">Task2</div>
-            <div className="text-sm text-muted-foreground">{essay.createdAt}</div>
+            <span className="text-muted-foreground">
+              {formatDistanceToNow(new Date(essay.createdAt))} ago
+            </span>
+
           </div>
           <div className="flex items-center space-x-4">
             <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">

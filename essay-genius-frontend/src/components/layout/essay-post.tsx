@@ -15,37 +15,12 @@ import { PageCommentRequest, CreateCommentRequest, createCommentRequestSchema, C
 import { api } from "@/lib/api";
 import ReactionDialog from "./reaction-dialog";
 import { CommentItem } from "./comment-item";
-import { useCommentMutation, useDeleteReactionMutation, useReactionMutation } from "@/hooks/mutations/interaction.mutation";
+import { useCommentMutation, useComments, useDeleteReactionMutation, useReactionMutation } from "@/hooks/mutations/interaction.mutation";
 import { FormControl, FormField, FormItem, FormMessage } from "../ui/form";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-
-function useComments(params: PageCommentRequest, enabled: boolean) {
-  return useInfiniteQuery({
-    queryKey: ["comments", params.essayId, params.parentId ?? null, params.createdBy ?? null],
-    queryFn: async ({ pageParam = 0 }) => {
-      const { status, body } = await api.interaction.getComments({
-        query: {
-          essayId: params.essayId,
-          parentId: params.parentId,
-          createdBy: params.createdBy,
-          page: pageParam,
-          size: params.size,
-        },
-      });
-
-      if (status !== 200) {
-        throw new Error((body as any)?.message || "Failed to fetch comments");
-      }
-
-      return body;
-    },
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => (lastPage.last ? undefined : lastPage.pageable.pageNumber + 1),
-    enabled,
-  });
-}
+import { ReplyInput } from "./reply-input";
 
 export default function EssayPost({ essayPost }: { essayPost: EssayScoredResponse }) {
   const [showFullEssay, setShowFullEssay] = useState(false);
@@ -295,43 +270,10 @@ export default function EssayPost({ essayPost }: { essayPost: EssayScoredRespons
                 )}
               </div>
 
-              {/* ME comment input - outside scrollable div */}
-              <div className="flex items-center space-x-2 border-t pt-4">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>ME</AvatarFallback>
-                </Avatar>
-                <FormProvider {...form}>
-                  <div className="flex-1 flex items-center space-x-2">
-                    <form onSubmit={handleSubmit(handleComment)} className="flex-1 flex items-center space-x-2">
-                      <FormField
-                        name="content"
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormControl>
-                              <Input
-                                {...field}
-                                className="rounded-full bg-muted border-0 h-7 text-xs flex-1"
-                                placeholder="Write a comment..."
-                                required
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        type="submit"
-                        className="h-7 w-7"
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
-                    </form>
-                  </div>
-                </FormProvider>
-              </div>
-
+              <ReplyInput
+                essayId={essayPost.id}
+                parentId={null}
+              />
             </div>
 
           )}

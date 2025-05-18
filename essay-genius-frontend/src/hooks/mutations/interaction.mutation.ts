@@ -1,6 +1,6 @@
-import { CommonReactionSchema, CreateCommentRequest, CreateCommentResponse, CreateReactionRequest } from "@/constracts/interaction.contrast";
+import { CommonReactionSchema, CreateCommentRequest, CreateCommentResponse, CreateReactionRequest, PageCommentRequest } from "@/constracts/interaction.contrast";
 import { api } from "@/lib/api";
-import { useMutation } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export function useCommentMutation() {
@@ -51,5 +51,30 @@ export function useDeleteReactionMutation(onSuccess?: () => void) {
     onError: () => {
       toast.error("Failed to delete reaction");
     },
+  });
+}
+export function useComments(params: PageCommentRequest, enabled: boolean) {
+  return useInfiniteQuery({
+    queryKey: ["comments", params.essayId, params.parentId ?? null, params.createdBy ?? null],
+    queryFn: async ({ pageParam = 0 }) => {
+      const { status, body } = await api.interaction.getComments({
+        query: {
+          essayId: params.essayId,
+          parentId: params.parentId,
+          createdBy: params.createdBy,
+          page: pageParam,
+          size: params.size,
+        },
+      });
+
+      if (status !== 200) {
+        throw new Error((body as any)?.message || "Failed to fetch comments");
+      }
+
+      return body;
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => (lastPage.last ? undefined : lastPage.pageable.pageNumber + 1),
+    enabled,
   });
 }

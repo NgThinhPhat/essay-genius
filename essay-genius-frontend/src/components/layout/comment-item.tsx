@@ -10,10 +10,11 @@ import { Send } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
 import { FormControl, FormField, FormItem, FormMessage } from "../ui/form";
 import { useCommentMutation, useDeleteReactionMutation, useReactionMutation } from "@/hooks/mutations/interaction.mutation";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { ReactionButton } from "./reaction-button";
+import { ReplyInput } from "./reply-input";
 
 interface CommentItemProps {
   comment: CommentSchema;
@@ -21,48 +22,38 @@ interface CommentItemProps {
 }
 
 export function CommentItem({ comment, depth = 0 }: CommentItemProps) {
-  const [reactionId, setReactionId] = useState<string | null>(comment.reactedInfo?.reactionId ?? null);
-  const [currentReaction, setCurrentReaction] = useState<ReactionType | null>(comment.reactedInfo?.reactionType ?? null);
+  const [reactionId, setReactionId] = useState<string | null>(
+    comment.reactedInfo?.reactionId ?? null
+  );
+  const [currentReaction, setCurrentReaction] = useState<ReactionType | null>(
+    comment.reactedInfo?.reactionType ?? null
+  );
   const [showReplies, setShowReplies] = useState(false);
   const [showReplyInput, setShowReplyInput] = useState(false);
-  const [replies, setReplies] = useState<CommentSchema[]>([]);
-  const [loadingReplies, setLoadingReplies] = useState(false);
 
-  const queryClient = useQueryClient();
-
-  const form = useForm<CreateCommentRequest>({
-    resolver: zodResolver(createCommentRequestSchema),
-    defaultValues: {
-      essayId: comment.essayId,
-      parentId: comment.id ?? null,
-      content: "",
-    },
-  });
-
-  const { handleSubmit } = form;
-
-  const commentMutation = useCommentMutation();
   const createReactionMutation = useReactionMutation();
-
   const deleteReactionMutation = useDeleteReactionMutation();
+
   const handleReact = (type: ReactionType) => {
-    createReactionMutation.mutate({
-      targetId: comment.id,
-      targetType: "COMMENT",
-      type,
-    }, {
-      onSuccess: (response: CommonReactionSchema) => {
-        setReactionId(response.id);
-        comment.reactionCount++;
-        setCurrentReaction(type);
-        toast.success("Reacted successfully");
+    createReactionMutation.mutate(
+      {
+        targetId: comment.id,
+        targetType: "COMMENT",
+        type,
       },
-    });
+      {
+        onSuccess: (response: CommonReactionSchema) => {
+          setReactionId(response.id);
+          comment.reactionCount++;
+          setCurrentReaction(type);
+          toast.success("Reacted successfully");
+        },
+      }
+    );
   };
 
   const handleUnreact = () => {
     if (!reactionId) return;
-    console.log("reactionId1234", reactionId);
     deleteReactionMutation.mutate(reactionId, {
       onSuccess: () => {
         setReactionId(null);
@@ -71,19 +62,12 @@ export function CommentItem({ comment, depth = 0 }: CommentItemProps) {
     });
   };
 
-  const handleShowReplies = async () => {
-    if (showReplies) {
-      setShowReplies(false);
-      return;
-    }
-
-    if (replies.length > 0) {
-      setShowReplies(true);
-      return;
-    }
-
-    setLoadingReplies(true);
-    try {
+  const {
+    data: replies,
+    isLoading: loadingReplies,
+  } = useQuery<CommentSchema[]>({
+    queryKey: ["comments", comment.essayId, comment.id],
+    queryFn: async () => {
       const { status, body } = await api.interaction.getComments({
         query: {
           essayId: comment.essayId,
@@ -93,44 +77,13 @@ export function CommentItem({ comment, depth = 0 }: CommentItemProps) {
         },
       });
 
-      if (status === 200) {
-        const parsed = pageCommentResponseSchema.parse(body);
-        setReplies(parsed.content);
-      }
-    } catch (error) {
-      console.error("Failed to load replies", error);
-    } finally {
-      setLoadingReplies(false);
-      setShowReplies(true);
-    }
-  };
+      if (status !== 200) throw new Error("Failed to fetch replies");
+      const parsed = pageCommentResponseSchema.parse(body);
+      return parsed.content;
+    },
+    enabled: showReplies,
+  });
 
-  const handleComment = (data: CreateCommentRequest) => {
-    if (!data.content.trim()) return;
-
-    commentMutation.mutate(data, {
-      onSuccess: (response) => {
-        form.reset({ ...data, content: "" });
-        setShowReplies(true);
-        setShowReplyInput(false);
-
-        if (response.valid) {
-          toast.success("Your toxic level is " + response.message);
-        } else {
-          toast.error("Your toxic level is " + response.message);
-        }
-
-        queryClient.invalidateQueries({
-          queryKey: ["comments", comment.essayId, comment.id, null],
-        });
-
-        handleShowReplies();
-      },
-      onError: () => {
-        toast("Failed to post comment");
-      },
-    });
-  };
 
   return (
     <div className="space-y-2" style={{ marginLeft: depth * 16 }}>
@@ -155,7 +108,10 @@ export function CommentItem({ comment, depth = 0 }: CommentItemProps) {
               currentReaction={currentReaction}
               onReact={handleReact}
               onUnreact={handleUnreact}
-              disabled={createReactionMutation.isLoading || deleteReactionMutation.isLoading}
+              disabled={
+                createReactionMutation.isLoading ||
+                deleteReactionMutation.isLoading
+              }
               count={comment.reactionCount}
             />
             <button
@@ -167,9 +123,11 @@ export function CommentItem({ comment, depth = 0 }: CommentItemProps) {
             {comment.replyCount > 0 && (
               <button
                 className="hover:text-foreground"
-                onClick={handleShowReplies}
+                onClick={() => setShowReplies((prev) => !prev)}
               >
-                {showReplies ? "Hide Replies" : `Show ${comment.replyCount} Replies`}
+                {showReplies
+                  ? "Hide Replies"
+                  : `Show ${comment.replyCount} Replies`}
               </button>
             )}
             <span className="text-muted-foreground">
@@ -178,37 +136,14 @@ export function CommentItem({ comment, depth = 0 }: CommentItemProps) {
           </div>
 
           {showReplyInput && (
-            <div className="flex items-center space-x-2 mt-2">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback>ME</AvatarFallback>
-              </Avatar>
-              <FormProvider {...form}>
-                <form
-                  onSubmit={handleSubmit(handleComment)}
-                  className="flex-1 flex items-center space-x-2"
-                >
-                  <FormField
-                    name="content"
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormControl>
-                          <Input
-                            {...field}
-                            className="rounded-full bg-muted border-0 h-7 text-xs"
-                            placeholder="Write a comment..."
-                            required
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button size="icon" variant="ghost" type="submit" className="h-7 w-7">
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </form>
-              </FormProvider>
-            </div>
+            <ReplyInput
+              essayId={comment.essayId}
+              parentId={comment.id}
+              onDone={() => {
+                setShowReplyInput(false);
+                setShowReplies(true);
+              }}
+            />
           )}
         </div>
       </div>
@@ -221,7 +156,7 @@ export function CommentItem({ comment, depth = 0 }: CommentItemProps) {
               <Skeleton className="h-4 w-2/3" />
             </>
           ) : (
-            replies.map((reply) => (
+            replies?.map((reply) => (
               <CommentItem key={reply.id} comment={reply} depth={depth + 1} />
             ))
           )}

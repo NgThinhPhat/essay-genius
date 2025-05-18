@@ -24,6 +24,7 @@ import { queryOptions, useQuery } from "@tanstack/react-query"
 import { listEssayResponseSchema } from "@/constracts/essay.constract"
 import { api } from "@/lib/api"
 import { EssayTabContent } from "@/components/layout/essay-tab-content"
+import { useComments } from "@/hooks/mutations/interaction.mutation"
 
 const getEssaysQueryOptions = ({
   searchTerm,
@@ -80,7 +81,6 @@ export default function Profile() {
   const { data: essayData, isLoading: essayLoading, error } = useQuery(
     getEssaysQueryOptions({ searchTerm, bandRange, currentPage, visibility: activeTab }),
   );
-
 
   const userEssays = essayData?.content || [];
   const totalPages = essayData?.totalPages || 1;
@@ -140,7 +140,7 @@ export default function Profile() {
             )}
 
             {/* Stats */}
-            <div className="grid grid-cols-2 gap-2 text-center text-sm">
+            <div className="grid grid-cols- gap-2 text-center text-sm">
               <div className="bg-muted p-2 rounded-md">
                 <div className="font-medium">{totalElements}</div>
                 <div className="text-xs text-muted-foreground">Essays</div>

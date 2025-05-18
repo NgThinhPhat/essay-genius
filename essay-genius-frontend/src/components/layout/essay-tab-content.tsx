@@ -16,7 +16,6 @@ export function EssayTabContent({
   setShowComments,
   currentPage,
   totalPages,
-  totalElements,
   onPageChange,
 }: {
   selectedEssay: string | null;
@@ -31,7 +30,6 @@ export function EssayTabContent({
   setShowComments: (s: boolean) => void;
   currentPage: number;
   totalPages: number;
-  totalElements: number;
   onPageChange: (page: number) => void;
 }) {
   const filteredEssays =

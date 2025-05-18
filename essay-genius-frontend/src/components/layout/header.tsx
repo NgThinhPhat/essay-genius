@@ -14,7 +14,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useSignOutMutation } from '@/hooks/mutations/auth.mutation';
 import { getCookie } from 'cookies-next';
-import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
 
 export default function Header() {

@@ -1,12 +1,13 @@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle, AlertDialogTrigger } from "@radix-ui/react-alert-dialog"
 import { Button } from "../ui/button"
-import { Send, Trash2 } from "lucide-react"
+import { Trash2 } from "lucide-react"
 import { AlertDialogFooter, AlertDialogHeader } from "../ui/alert-dialog"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar"
-import { Input } from "../ui/input"
 import { ScoreDetail } from "./score-detail"
 import { EssayScoredResponse } from "@/constracts/essay.constract"
+import { formatDistanceToNow } from "date-fns"
+import { CommentList } from "./comment-list"
+import { ReplyInput } from "./reply-input"
 
 interface EssayDetailProps {
   key: string
@@ -24,9 +25,6 @@ export function EssayDetail({
   essay,
   onBack,
   onDelete,
-  newComment,
-  setNewComment,
-  handleAddComment,
   showComments,
   setShowComments,
 }: EssayDetailProps) {
@@ -67,8 +65,13 @@ export function EssayDetail({
         <Card>
           <CardHeader>
             <CardTitle>Task 2</CardTitle>
-            <CardDescription>{essay.createdAt}</CardDescription>
+            <CardDescription>
+              <span className="text-muted-foreground">
+                {formatDistanceToNow(new Date(essay.createdAt))} ago
+              </span>
+            </CardDescription>
           </CardHeader>
+
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <h3 className="font-medium">Prompt:</h3>
@@ -94,54 +97,17 @@ export function EssayDetail({
             </CardHeader>
             <CardContent className="space-y-4">
               {essay.comments > 0 ? (
-                <div className="space-y-4">
-                  {/* {essay.comments.map((comment) => ( */}
-                  {/*   <div key={comment.id} className="flex space-x-2"> */}
-                  {/*     <Avatar className="h-8 w-8"> */}
-                  {/*       <AvatarImage src={comment.user.avatar || "/placeholder.svg"} alt={comment.user.name} /> */}
-                  {/*       <AvatarFallback>{comment.user.initials}</AvatarFallback> */}
-                  {/*     </Avatar> */}
-                  {/*     <div className="flex-1"> */}
-                  {/*       <div className="bg-muted rounded-lg p-3"> */}
-                  {/*         <div className="font-medium text-sm">{comment.user.name}</div> */}
-                  {/*         <div className="text-sm">{comment.text}</div> */}
-                  {/*       </div> */}
-                  {/*       <div className="flex items-center space-x-3 mt-1 text-xs"> */}
-                  {/*         <button className="text-muted-foreground hover:text-foreground">Like</button> */}
-                  {/*         <button className="text-muted-foreground hover:text-foreground">Reply</button> */}
-                  {/*         <span className="text-muted-foreground">{comment.time}</span> */}
-                  {/*       </div> */}
-                  {/*     </div> */}
-                  {/*   </div> */}
-                  {/* ))} */}
-                </div>
+                <CommentList essayId={essay.id} showComments={showComments} />
               ) : (
                 <div className="text-center text-sm text-muted-foreground py-2">
                   No comments yet. Be the first to comment!
                 </div>
               )}
 
-              <div className="flex items-center space-x-2 pt-4">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>ME</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 flex items-center space-x-2">
-                  <Input
-                    placeholder="Write a comment..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    className="rounded-full bg-muted border-0"
-                  />
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleAddComment(essay.id)}
-                    disabled={!newComment.trim()}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+              <ReplyInput
+                essayId={essay.id}
+                parentId={key}
+              />
             </CardContent>
           </Card>
         )}
