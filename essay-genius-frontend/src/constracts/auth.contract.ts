@@ -1,6 +1,6 @@
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
-import { uploadFileBodySchema, userInfoSchema } from './essay.constract';
+import { userInfoSchema } from './essay.constract';
 
 const c = initContract();
 

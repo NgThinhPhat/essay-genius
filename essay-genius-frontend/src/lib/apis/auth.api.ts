@@ -25,7 +25,7 @@ export async function signUp(
   const response = await restClient.post<
     SignUpResponseSchema,
     SignUpBodySchema
-  >("/identity/auth/sign-up",
+  >("/identity/sign-up",
     data,
     {
       headers: {
@@ -45,7 +45,7 @@ export async function signIn(
   const response = await restClient.post<
     SignInResponseSchema,
     SignInBodySchema
-  >("/identity/auth/sign-in",
+  >("/identity/sign-in",
     data,
     {
       headers: {
@@ -62,7 +62,7 @@ export async function refresh(
 
 ): Promise<TokensResponseSchema> {
   const response = await restClient.post<TokensResponseSchema>(
-    "/identity/auth/refresh",
+    "/identity/refresh",
     body,
     {
       headers: {
@@ -80,7 +80,7 @@ export async function sendMailForgotPassword(
   const response = await restClient.post<
     SendEmailVerificationResponseSchema,
     SendEmailForgotPasswordBodySchema
-  >("/identity/auth/send-forgot-password",
+  >("/identity/send-forgot-password",
     data,
     {
       headers: {
@@ -99,7 +99,7 @@ export async function sendEmailVerification(
   const response = await restClient.post<
     SendEmailVerificationResponseSchema,
     SendEmailVerificationBodySchema
-  >("/identity/auth/send-email-verification",
+  >("/identity/send-email-verification",
     data,
     {
       headers: {
@@ -118,7 +118,7 @@ export async function verifyEmail(
   const response = await restClient.post<
     VerifyEmailByCodeResponseSchema,
     VerifyEmailByCodeBodySchema
-  >("/identity/auth/verify-email-by-code",
+  >("/identity/verify-email-by-code",
     data,
     {
       headers: {
@@ -137,7 +137,7 @@ export async function forgotPassword(
   const response = await restClient.post<
     ForgotPasswordResponseSchema,
     VerifyEmailByCodeBodySchema
-  >("/identity/auth/forgot-password",
+  >("/identity/forgot-password",
     data,
     {
       headers: {
@@ -156,7 +156,7 @@ export async function resetPassword(
   const response = await restClient.post<
     ResetPasswordResponseSchema,
     ResetPasswordBodySchema
-  >("/identity/auth/reset-password",
+  >("/identity/reset-password",
     data,
     {
       headers: {

@@ -49,6 +49,9 @@ public class MockServiceImpl implements MockService {
         Collections.shuffle(userIds);
         for (int i = 0; i < 300; i++) {
             String essayId = essayIds.get(faker.random().nextInt(essayIds.size()));
+            if(i == 0){
+                essayId = "682973982ecbf74143ef35bf";
+            }
             int topLevelCommentCount = faker.random().nextInt(2, 6);
             for (int j = 0; j < topLevelCommentCount; j++) {
                 mockSecurityContext(userIds.get(faker.random().nextInt(userIds.size())));
@@ -101,35 +104,27 @@ public class MockServiceImpl implements MockService {
 //                        }
                     }
                 }
+//                Collections.shuffle(userIds);
 //                int reactionCount = faker.random().nextInt(10, 20);
-//                List<String> userReacted = new ArrayList<>();
 //                for (int r = 0; r < reactionCount; r++) {
-//                    String userId = userIds.get(faker.random().nextInt(userIds.size()));
-//                    while (userReacted.contains(userId)){
-//                        userId = userIds.get(faker.random().nextInt(userIds.size()));
-//                    };
+//                    String userId = userIds.get(r);
 //                    mockSecurityContext(userId);
 //                    interactionService.addReaction(parent.getId(), TargetType.COMMENT.name(), randomReactionType().name());
-//                    userReacted.add(userId);
 //                }
             }
 
-//            int essayReactionCount = faker.random().nextInt(10, 20);
-//            List<String> userReacted = new ArrayList<>();
-//            for (int r = 0; r < essayReactionCount; r++) {
-//                String userId = userIds.get(faker.random().nextInt(userIds.size()));
-//                while (userReacted.contains(userId)) {
-//                    userId = userIds.get(faker.random().nextInt(userIds.size()));
-//                };
-//                mockSecurityContext(userId);
-//                Reaction reaction = Reaction.builder()
-//                        .targetId(essayId)
-//                        .targetType(TargetType.ESSAY)
-//                        .reactionType(ReactionType.STAR)
-//                        .build();
-//                interactionService.addReaction(reaction.getTargetId(), reaction.getTargetType().name(), reaction.getReactionType().name());
-//
-//            }
+            int essayReactionCount = faker.random().nextInt(10, 20);
+            Collections.shuffle(userIds);
+            for (int r = 0; r < essayReactionCount; r++) {
+                String userId = userIds.get(r);
+                mockSecurityContext(userId);
+                Reaction reaction = Reaction.builder()
+                        .targetId(essayId)
+                        .targetType(TargetType.ESSAY)
+                        .reactionType(ReactionType.STAR)
+                        .build();
+                interactionService.addReaction(reaction.getTargetId(), reaction.getTargetType().name(), reaction.getReactionType().name());
+            }
         }
     }
 
